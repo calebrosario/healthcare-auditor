@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # Neo4j Knowledge Graph Database
+  neo4j:
+    image: neo4j:5.20-community
+    container_name: healthcare-auditor-neo4j
+    ports:
+      - "7687:7687"
+      - "7474:7474"
+    environment:
+      - NEO4J_AUTH=neo4j/healthcare
+      - NEO4J_PASSWORD=password
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms.connector.experimental_skip_unavailable=warning
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    networks:
+      - healthcare-network
+
+  # PostgreSQL for Structured Data
+  postgres:
+    image: postgres:16-alpine
+    container_name: healthcare-auditor-postgres
+    environment:
+      - POSTGRES_DB=healthcare_auditor
+      - POSTGRES_USER=healthcare_user
+      - POSTGRES_PASSWORD=healthcare_password
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+      - POSTGRES_HOST_AUTH_METHOD=scram-sha-256
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - healthcare-network
+
+  # Redis for Caching and Queue
+  redis:
+    image: redis:7-alpine
+    container_name: healthcare-auditor-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - healthcare-network
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: healthcare-auditor-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://healthcare_user:healthcare_password@postgres:5432/healthcare_auditor
+      - NEO4J_URI=bolt://neo4j:password@neo4j:7687
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - SECRET_KEY=dev-secret-key-change-in-production
+    depends_on:
+      - neo4j
+      - postgres
+      - redis
+    networks:
+      - healthcare-network
+
+  # Frontend Dashboard
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_WS_URL=ws://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - healthcare-network
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  postgres_data:
+  redis_data:
+
+networks:
+  healthcare-network:
+    driver: bridge
