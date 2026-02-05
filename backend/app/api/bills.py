@@ -7,6 +7,7 @@ from typing import List, Optional
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..core.database import get_db
+from ..core.neo4j import get_neo4j
 from ..models.bill import Bill, BillStatus
 from ..security import require_auth
 
@@ -95,6 +96,7 @@ async def get_bill(
 async def validate_bill(
     bill: BillValidationRequest,
     db: AsyncSession = Depends(get_db),
+    neo4j: AsyncSession = Depends(get_neo4j),
     user_id: str = Depends(require_auth)
 ):
     """
@@ -107,16 +109,42 @@ async def validate_bill(
     4. Network analysis
     5. Compliance checks
     """
-    # TODO: Implement full validation pipeline
-    # See phase 3 tasks for detailed implementation
+    from ..core.rules_engine import RuleEngine
+    from sqlalchemy import select
+    from sqlalchemy.orm import selectinload
+
+    # Find bill by claim ID (or patient_id + provider_id + date)
+    stmt = select(Bill).where(
+        (Bill.patient_id == bill.patient_id) &
+        (Bill.provider_id == bill.provider_id) &
+        (Bill.bill_date == bill.bill_date)
+    ).options(selectinload(Bill.provider))
     
+    result = await db.execute(stmt)
+    bill_record = result.scalar_one_or_none()
+
+    if not bill_record:
+        raise HTTPException(status_code=404, detail=f"Bill not found: patient_id={bill.patient_id}")
+
+    # Create rules engine and evaluate
+    engine = RuleEngine(db, neo4j)
+    evaluation_result = await engine.evaluate_bill(bill_record.claim_id)
+
+    # Determine risk level
+    if evaluation_result.chain_result.fraud_score >= 0.8:
+        risk_level = "high"
+    elif evaluation_result.chain_result.fraud_score >= 0.5:
+        risk_level = "medium"
+    else:
+        risk_level = "low"
+
     return BillValidationResponse(
-        claim_id=f"tmp-{bill.patient_id}",
-        fraud_score=0.15,
-        fraud_risk_level="low",
-        compliance_score=0.95,
-        issues=[],
-        warnings=["Placeholder - TODO: Implement validation"]
+        claim_id=evaluation_result.chain_result.claim_id,
+        fraud_score=evaluation_result.chain_result.fraud_score,
+        fraud_risk_level=risk_level,
+        compliance_score=evaluation_result.chain_result.compliance_score,
+        issues=evaluation_result.chain_result.issues,
+        warnings=evaluation_result.chain_result.warnings
     )
 
 

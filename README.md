@@ -1,118 +1,249 @@
-# Healthcare Fraud Detection Research Findings
+# Healthcare Auditor
 
-## Executive Summary
+A comprehensive healthcare billing fraud detection and compliance verification system.
 
-This research provides comprehensive information about healthcare billing fraud detection and audit systems, covering detection patterns, methodologies, workflows, data requirements, performance metrics, and available solutions.
+## Overview
 
-## Research Areas Covered
+Healthcare Auditor is a production-ready system for detecting fraudulent medical claims and ensuring billing compliance. It combines rule-based validation, knowledge graph analysis, and (in Phase 4) machine learning to identify suspicious billing patterns.
 
-### 1. Bill Fraud Detection Patterns
-- **Statistical Anomalies**: Outlier analysis, frequency spikes, time-based anomalies, geographic inconsistencies
-- **Code-Based Fraud**: Upcoding, unbundling, miscoding, modifier abuse
-- **Provider-Level Patterns**: Unusual procedure mixes, service intensity outliers, peer group deviations
-- **Patient-Level Patterns**: Excessive treatments, duplicate services, demographic inconsistencies
-- **Network Patterns**: Referral fraud, kickback schemes, shared ownership arrangements
+## Architecture
 
-### 2. Detection Methodologies
-- **Rule-Based Systems**: Static rules, dynamic rules, edit checks, threshold rules
-- **Machine Learning/AI**: Supervised learning (Random Forest, XGBoost), unsupervised learning (clustering, anomaly detection), ensemble methods
-- **Graph Analytics**: Social network analysis, centrality analysis, community detection
-- **Anomaly Detection Algorithms**: Statistical methods, ML-based detection (Isolation Forest, LOF, One-Class SVM)
-- **NLP for Medical Records**: Clinical documentation analysis, discrepancy detection, pattern recognition
+### Technology Stack
 
-### 3. Audit Workflows and Systems
-- **CMS Methodologies**: Pre/post-payment reviews, RACs, MACs, ZPICs, CERT
-- **Private Insurance Approaches**: SIUs, predictive modeling, provider scoring, peer reviews
-- **Trigger-Based vs Continuous Monitoring**: Reactive vs proactive detection strategies
-- **Human Review Workflows**: Triage, preliminary review, investigation, determination, resolution
-- **Case Management**: Assignment, evidence collection, timeline management, decision documentation
-- **Appeal and Resolution**: Notification, response, reconsideration, formal appeal, final resolution
+- **Language**: Python 3.11+
+- **Backend**: FastAPI with async PostgreSQL
+- **Knowledge Graph**: Neo4j for entity relationships
+- **Caching**: Redis 7
+- **Task Queue**: Celery for async processing
+- **Testing**: Pytest with pytest-asyncio
 
-### 4. Data Requirements
-- **Minimum Data Elements**: Claim headers, procedure codes, billing amounts, provider/patient information
-- **Historical Retention**: CMS requirements (10+ years), best practices for archiving
-- **Benchmark Data**: National/regional/specialty benchmarks, time-series analysis
-- **Provider Baselines**: Specialty-specific patterns, peer group analysis
-- **Geographic/Demographic Adjustments**: Regional variations, demographic factors, socioeconomic adjustments
+### Database Architecture
 
-### 5. Performance Metrics
-- **False Positive/Negative Tradeoffs**: Precision-recall balance, cost considerations, threshold tuning
-- **Detection Benchmarks**: Industry standards (5-15% precision), best-in-class targets (20-30% precision)
-- **Cost Savings**: Direct savings (recovered funds, prevented losses), ROI calculations
-- **Audit Coverage**: Sampling strategies (random, targeted, stratified, adaptive), statistical confidence
+```
+┌─────────────────────────────────────────────────────────┐
+│                  FastAPI Backend                │
+│                      │                              │
+│         ┌────────────┴────────────┐           │
+│         │   PostgreSQL (Primary)     │           │
+│         │   Bills, Providers, etc.     │           │
+│         └───────────────────────────────┘           │
+│                      │                              │
+│         ┌────────────┴────────────┐            │
+│         │   Neo4j (Graph)          │            │
+│         │   Provider Networks              │            │
+│         │   Regulation Relationships    │            │
+│         └─────────────────────────────┘            │
+└─────────────────────────────────────────────────────────┘
+```
 
-### 6. Open Source and Commercial Solutions
-- **Open Source Tools**: PyOD, Scikit-learn, TensorFlow/PyTorch, NetworkX
-- **Commercial Platforms**: IBM TrustSphere, SAS Fraud Analytics, FICO Healthcare Fraud Manager
-- **Case Studies**: Medicare PSCs ($8.2B recoveries), private payer implementations (40% false positive reduction)
-- **Regulatory Compliance**: CMS-approved methodologies, HIPAA compliance, due process requirements
+## Project Structure
 
-## Key Findings
+```
+healthcare-auditor/
+├── backend/
+│   ├── app/
+│   │   ├── api/              # FastAPI endpoints
+│   │   ├── core/             # Core components (rules_engine.py, neo4j.py)
+│   │   ├── models/           # SQLAlchemy models
+│   │   ├── rules/            # Rule validators (NEW - Phase 3)
+│   │   ├── security/          # Authentication and authorization
+│   │   └── config.py         # Configuration management
+│   └── main.py              # FastAPI application
+├── scripts/                   # Standalone scripts
+│   ├── validate_bills.py      # Rules engine executor (NEW - Phase 3)
+│   └── ingestion/            # Data ingestion scripts
+├── tests/                     # Test suite
+│   └── test_rules_engine.py   # Rules engine tests (NEW - Phase 3)
+├── docs/
+│   ├── KNOWLEDGE_GRAPH_STATE_MACHINE.md
+│   └── RULES_ENGINE_STATE_MACHINE.md  # NEW - Phase 3
+├── .research/                  # Research and session handoffs
+└── .env.example              # Environment configuration template
+```
 
-### Fraud Detection Effectiveness
-- **Industry Average**: 5-15% precision rate for healthcare fraud detection
-- **Best-in-Class Systems**: 20-30% precision with 80%+ recall rates
-- **ML-Enhanced Systems**: Significantly outperform traditional rule-based approaches
+## Features
 
-### Implementation Recommendations
-1. **Hybrid Approach**: Combine rule-based systems with machine learning and human review
-2. **Continuous Monitoring**: Real-time scoring with tiered response protocols
-3. **Data Integration**: Comprehensive claims, provider, and patient data sources
-4. **Performance Optimization**: Balance precision and recall based on cost analysis
-5. **Regulatory Compliance**: Ensure all detection methods align with CMS and industry standards
+### Knowledge Graph (Phase 2 - Complete)
+- ✅ Neo4j integration for provider networks
+- ✅ Batch node and edge creation
+- ✅ 7 relationship types
+- ✅ UNWIND pattern for 900x performance improvement
+- ✅ MERGE operations for idempotency
 
-### Technology Stack Recommendations
-- **Core Analytics**: Python (PyOD, Scikit-learn) for anomaly detection
-- **Machine Learning**: TensorFlow/PyTorch for advanced pattern recognition
-- **Graph Analysis**: NetworkX or Neo4j for network fraud detection
-- **Case Management**: Integrated platforms for investigation workflow
-- **Real-time Processing**: Streaming analytics for immediate fraud detection
+### Rules Engine (Phase 3 - Complete)
+- ✅ 9 rule implementations across 4 categories
+- ✅ Rule chain with prioritization and early termination
+- ✅ Composite fraud and compliance scoring
+- ✅ Neo4j context enrichment
+- ✅ Batch evaluation support
+- ✅ Comprehensive error handling and logging
+- ✅ 25+ unit tests
 
-## Next Steps
+#### Rule Types
 
-### Phase 1: Foundation
-- Establish baseline rules and basic analytics
-- Implement data collection and integration
-- Set up initial fraud detection models
+**Coding Rules** (`backend/app/rules/coding_rules.py`):
+- ICD-10 format validation
+- CPT code existence and status
+- CPT-ICD pair validation
 
-### Phase 2: Enhancement
-- Deploy machine learning models and predictive analytics
-- Add network analysis capabilities
-- Implement real-time monitoring
+**Medical Necessity Rules** (`backend/app/rules/medical_necessity_rules.py`):
+- Documentation completeness check
+- Medical necessity score validation
 
-### Phase 3: Optimization
-- Fine-tune detection algorithms
-- Optimize investigation workflows
-- Integrate with existing systems
+**Frequency Rules** (`backend/app/rules/frequency_rules.py`):
+- Provider procedure frequency limits
+- Patient procedure frequency limits
 
-### Phase 4: Advanced Capabilities
-- Implement advanced AI and deep learning
-- Add blockchain for secure claims processing
-- Establish cross-organization data sharing
+**Billing Rules** (`backend/app/rules/billing_rules.py`):
+- Billing amount limit checks
+- Exact and near-duplicate detection
 
-## Conclusion
+## API Endpoints
 
-Healthcare fraud detection requires a comprehensive, multi-layered approach combining technology, analytics, and human expertise. The most effective systems integrate rule-based detection with advanced machine learning, network analysis, and robust audit workflows. By following the methodologies and best practices outlined in this research, organizations can implement fraud detection systems that achieve 20-30% precision rates while maintaining 80%+ recall and generating significant ROI through recovered funds and prevented losses.
+### Bills API
 
-## Resources
+#### `POST /api/v1/bills/validate`
+Validate a single medical bill against all rules.
 
-### Documentation
-- CMS Program Integrity Resources: https://www.cms.gov/fraud
-- Healthcare Fraud Prevention Partnership: https://www.cms.gov/medicare/medicaid-coordination/healthcare-fraud-prevention-partnership
-- PyOD Anomaly Detection Library: https://github.com/yzhao062/pyod
+**Request**:
+```json
+{
+  "patient_id": "PATIENT-001",
+  "provider_npi": "1234567890",
+  "insurer_id": 1,
+  "procedure_code": "99214",
+  "diagnosis_code": "I10",
+  "billed_amount": 150.00,
+  "bill_date": "2026-02-05T10:00:00Z"
+}
+```
 
-### Tools and Libraries
-- **PyOD**: Comprehensive outlier detection in Python
-- **Scikit-learn**: Machine learning algorithms and utilities
-- **TensorFlow/PyTorch**: Deep learning frameworks
-- **NetworkX**: Graph analysis and network algorithms
-- **Apache Spark**: Big data processing for large-scale analytics
+**Response**:
+```json
+{
+  "claim_id": "CLAIM-001",
+  "fraud_score": 0.15,
+  "fraud_risk_level": "low",
+  "compliance_score": 0.85,
+  "issues": ["Near-duplicate bill found"],
+  "warnings": ["Documentation is brief"]
+}
+```
 
-### Commercial Solutions
-- IBM TrustSphere
-- SAS Fraud Analytics
-- FICO Healthcare Fraud Manager
-- Exigen Insurance Analytics
-- Pondera Solutions
+### Standalone Script
 
-This research provides a solid foundation for implementing effective healthcare fraud detection and audit systems that can identify fraudulent patterns, optimize investigation resources, and generate significant financial returns.
+```bash
+# Validate single bill
+python scripts/validate_bills.py --claim-id CLAIM-001
+
+# Batch validate bills
+python scripts/validate_bills.py --batch --input claims.json
+```
+
+## Configuration
+
+Environment variables (see `.env.example`):
+
+```env
+# PostgreSQL
+DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/healthcare_auditor
+DATABASE_POOL_SIZE=10
+DATABASE_MAX_OVERFLOW=20
+
+# Neo4j
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=your_neo4j_password
+NEO4J_DATABASE=neo4j
+
+# Redis
+REDIS_URL=redis://localhost:6379/0
+REDIS_CACHE_TTL=3600
+
+# Fraud Detection
+FRAUD_SCORE_THRESHOLD=0.65
+ALERT_PRIORITY_HIGH=0.95
+ALERT_PRIORITY_MEDIUM=0.80
+```
+
+## Installation
+
+```bash
+# Clone repository
+git clone <repository-url>
+cd healthcare-auditor
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your settings
+
+# Initialize databases
+# PostgreSQL: Create database and run migrations
+# Neo4j: Start Neo4j service
+
+# Run tests
+pytest tests/ -v
+```
+
+## Development
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Run specific test file
+pytest tests/test_rules_engine.py -v
+
+# Run specific test
+pytest tests/test_rules_engine.py::TestICD10ValidationRule::test_valid_icd10_code -v
+
+# With coverage
+pytest tests/ --cov=backend/app --cov-report=html
+```
+
+### Running API
+
+```bash
+# Start development server
+uvicorn backend.app.main:app --reload --port 8000
+
+# API will be available at http://localhost:8000
+# Interactive docs at http://localhost:8000/docs
+```
+
+### Using Knowledge Graph Builder
+
+```bash
+# Build knowledge graph from PostgreSQL data
+python scripts/build_graph.py
+```
+
+## Phase Progress
+
+- ✅ **Phase 1**: Foundation & Setup
+- ✅ **Phase 2**: Knowledge Graph Construction (Complete)
+- ✅ **Phase 3**: Rules Engine (Complete)
+- 🔄 **Phase 4**: Fraud Detection & ML (Next)
+
+## Documentation
+
+- [Knowledge Graph State Machine](docs/KNOWLEDGE_GRAPH_STATE_MACHINE.md)
+- [Rules Engine State Machine](docs/RULES_ENGINE_STATE_MACHINE.md)
+- [Session Handoffs](.research/SESSION_HANDOFF.md)
+
+## License
+
+[Specify your license here]
+
+## Contributing
+
+[Specify contribution guidelines here]
