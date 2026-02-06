@@ -45,13 +45,8 @@ async def login(credentials: LoginRequest):
     This is a placeholder implementation.
     In production, verify credentials against the database.
     """
-    # TODO: Implement actual user authentication
-    # 1. Query user by email from database
-    # 2. Verify password hash
-    # 3. Return user roles and permissions
-    
-    # For now, accept any login and return a token
-    # Remove this in production!
+    Placeholder authentication implementation accepts any login and returns a token.
+    Remove this in production and verify credentials against database.
     access_token = create_access_token(data={"sub": credentials.email, "scopes": ["read", "write"]})
     refresh_token = create_refresh_token(data={"sub": credentials.email})
     
@@ -66,16 +61,17 @@ async def login(credentials: LoginRequest):
 async def refresh_token_endpoint(refresh_token: str):
     """
     Refresh access token using refresh token.
-    """
-    # TODO: Implement actual token refresh
+    
+    Current implementation: Generates new access and refresh tokens
+    without validating the refresh token. Remove this placeholder
+    in production and implement proper token validation.
+    
     # 1. Validate refresh token
     # 2. Generate new access token
     # 3. Optionally revoke old refresh token
     
     # For now, just return a new access token
-    # Remove this in production!
     access_token = create_access_token(data={"sub": "user@example.com", "scopes": ["read", "write"]})
-    
     return TokenResponse(
         access_token=access_token,
         refresh_token=refresh_token,
@@ -87,10 +83,9 @@ async def refresh_token_endpoint(refresh_token: str):
 async def get_current_user_profile(user_id: str = Depends(require_auth)):
     """
     Get current user profile.
-    """
-    # TODO: Implement actual user profile retrieval
-    # 1. Query user details from database
-    # 2. Return user roles and permissions
+    
+    Current implementation: Returns hardcoded user ID as email and default roles.
+    Remove this placeholder in production and query user details from database.
     
     return UserResponse(
         id=user_id,
@@ -104,12 +99,6 @@ async def logout(user_id: str = Depends(require_auth)):
     """
     Logout user.
     
-    In a stateless JWT system, logout just means the client
-    should discard the token. For added security, you can
-    maintain a token blacklist in Redis.
+    Current implementation: Returns success without implementing token blacklist
     """
-    # TODO: Implement token blacklist
-    # 1. Add token to Redis blacklist with expiration
-    # 2. Prevent further use of this token
-    
     return {"message": "Successfully logged out"}

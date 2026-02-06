@@ -95,7 +95,7 @@ async def get_bill(
     """
     Get a specific bill by claim ID.
     """
-    raise HTTPException(status_code=404, detail="Bill not found - TODO: Implement database")
+    raise HTTPException(status_code=501, detail="Not implemented")
 
 
 @router.post("/validate", response_model=BillValidationResponse)

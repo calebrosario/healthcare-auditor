@@ -52,7 +52,8 @@ async def get_provider(
     """
     Get a specific provider by NPI.
     """
-    raise HTTPException(status_code=404, detail="Provider not found - TODO: Implement database")
+    
+    raise HTTPException(status_code=501, detail="Not implemented")
 
 
 @router.get("/{npi}/network")

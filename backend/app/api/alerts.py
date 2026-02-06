@@ -57,7 +57,8 @@ async def get_alert(
     """
     Get a specific alert by ID.
     """
-    raise HTTPException(status_code=404, detail="Alert not found - TODO: Implement database")
+    
+    raise HTTPException(status_code=501, detail="Not implemented")
 
 
 @router.put("/{alert_id}")
@@ -69,10 +70,9 @@ async def update_alert(
 ):
     """
     Update alert status (acknowledge, investigate, resolve, dismiss).
+    
+    Current implementation: Returns success without database update.
     """
-    # TODO: Implement alert update
-    # 1. Validate user permissions
-    # 2. Update alert status in database
     # 3. Record who updated the alert and when
     
     return {
