@@ -40,13 +40,19 @@ class BillValidationRequest(BaseModel):
 
 
 class BillValidationResponse(BaseModel):
-    """Response with validation results."""
+    """Response with validation results including Phase 4 analysis."""
     claim_id: str
     fraud_score: float
     fraud_risk_level: str
     compliance_score: float
     issues: List[str]
     warnings: List[str]
+    code_legality_score: Optional[float] = None
+    ml_fraud_probability: Optional[float] = None
+    network_risk_score: Optional[float] = None
+    anomaly_flags: Optional[List[str]] = None
+    code_violations: Optional[List[str]] = None
+    phase4_stats: Optional[Dict[str, Any]] = None
 
 
 @router.post("", response_model=BillResponse)
@@ -138,13 +144,29 @@ async def validate_bill(
     else:
         risk_level = "low"
 
+    # Extract Phase 4 results
+    phase4_data = evaluation_result.phase4_results or {}
+
+    code_legality_score = phase4_data.get("legality_score")
+    ml_fraud_probability = phase4_data.get("fraud_probability")
+    network_risk_score = phase4_data.get("network_risk_score")
+    anomaly_flags = phase4_data.get("anomaly_flags", [])
+    code_violations = phase4_data.get("code_violations", [])
+    phase4_stats = phase4_data.get("stats", {})
+
     return BillValidationResponse(
         claim_id=evaluation_result.chain_result.claim_id,
         fraud_score=evaluation_result.chain_result.fraud_score,
         fraud_risk_level=risk_level,
         compliance_score=evaluation_result.chain_result.compliance_score,
         issues=evaluation_result.chain_result.issues,
-        warnings=evaluation_result.chain_result.warnings
+        warnings=evaluation_result.chain_result.warnings,
+        code_legality_score=code_legality_score,
+        ml_fraud_probability=ml_fraud_probability,
+        network_risk_score=network_risk_score,
+        anomaly_flags=anomaly_flags,
+        code_violations=code_violations,
+        phase4_stats=phase4_stats
     )
 
 

@@ -56,7 +56,30 @@ class Settings(BaseSettings):
     ALERT_PRIORITY_HIGH: float = 0.95
     ALERT_PRIORITY_MEDIUM: float = 0.80
     ALERT_PRIORITY_LOW: float = 0.65
-    
+
+    # ML Model Settings
+    ML_MODEL_PATH: str = "/tmp/ml_models"
+    MODEL_VERSION: str = "1.0"
+    RETRAIN_INTERVAL_DAYS: int = 7
+    FEATURE_COLUMNS: List[str] = [
+        "billed_amount",
+        "amount_zscore",
+        "provider_claim_count",
+        "provider_avg_ratio"
+    ]
+    SCORING_WEIGHTS: dict = {
+        "rules": 0.25,
+        "ml": 0.35,
+        "network": 0.25,
+        "nlp": 0.15
+    }
+    HIGH_RISK_THRESHOLD: float = 0.7
+    MEDIUM_RISK_THRESHOLD: float = 0.4
+
+    # External APIs
+    NCCI_API_ENABLED: bool = False
+    FEE_SCHEDULE_ENABLED: bool = False
+
     # Knowledge Graph
     KG_CACHE_TTL_SECONDS: int = 3600
     MAX_RELATIONSHIP_DEPTH: int = 5
