@@ -8,7 +8,7 @@ from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..core.database import get_db
 from ..core.neo4j import get_neo4j
-from ..models.bill import Bill, BillStatus
+from models.bill import Bill, BillStatus
 from ..security import require_auth
 
 

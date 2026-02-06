@@ -49,6 +49,7 @@ class EvaluationResult:
     claim_id: str
     chain_result: ChainResult
     enriched_context: Dict[str, Any] = field(default_factory=dict)
+    phase4_results: Dict[str, Any] = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.utcnow)
 
 

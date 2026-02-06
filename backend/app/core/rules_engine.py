@@ -19,6 +19,11 @@ from .coding_rules import ICD10ValidationRule, CPTValidationRule, DXPairValidati
 from .medical_necessity_rules import DocumentationCompletenessRule, MedicalNecessityScoreRule
 from .frequency_rules import ProcedureFrequencyRule, PatientFrequencyRule
 from .billing_rules import AmountLimitRule, DuplicateDetectionRule
+from .anomaly_detection import AnomalyDetection
+from .ml_models import MLModels
+from .network_analysis import NetworkAnalyzer
+from .code_legality import CodeLegalityAnalyzer
+from .risk_scoring import RiskScoringEngine
 
 
 # Configure logging
@@ -204,6 +209,14 @@ class RuleEngine:
         self.neo4j = neo4j
         self.rule_chain = RuleChain()
         self._initialize_rules()
+
+        # Phase 4 engines for fraud detection
+        self.anomaly_detection = AnomalyDetection()
+        self.ml_models = MLModels()
+        self.network_analysis = NetworkAnalyzer(neo4j) if neo4j else None
+        self.code_legality = CodeLegalityAnalyzer(db)
+        self.risk_scoring = RiskScoringEngine()
+
         self.stats = {
             "bills_evaluated": 0,
             "rules_executed": 0,
@@ -289,6 +302,76 @@ class RuleEngine:
 
         return context
 
+    async def _run_phase4_analysis(
+        self,
+        bill: Bill,
+        context: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Run all Phase 4 analysis engines in parallel.
+
+        Args:
+            bill: Bill object to analyze
+            context: Enriched context data
+
+        Returns:
+            Dictionary with results from all Phase 4 engines
+        """
+        import asyncio
+
+        results = {}
+
+        try:
+            tasks = []
+
+            # Anomaly detection (does not require external dependencies)
+            if self.anomaly_detection:
+                task_anomaly = self.anomaly_detection.analyze_bill(bill)
+                tasks.append(task_anomaly)
+
+            # ML models (does not require external dependencies)
+            if self.ml_models:
+                task_ml = self.ml_models.predict_fraud(bill, context.get("historical_bills", []))
+                tasks.append(task_ml)
+
+            # Network analysis (requires Neo4j)
+            if self.network_analysis:
+                task_network = self.network_analysis.analyze_provider_risk(
+                    bill.provider.npi if hasattr(bill.provider, 'npi') else None
+                )
+                tasks.append(task_network)
+
+            # Code legality verification (requires PostgreSQL)
+            if self.code_legality:
+                task_code = self.code_legality.verify_code_compatibility(
+                    procedure_code=getattr(bill, "procedure_code", ""),
+                    diagnosis_code=getattr(bill, "diagnosis_code", ""),
+                    payer_id=getattr(bill, "insurer_id", 1)
+                )
+                tasks.append(task_code)
+
+            # Run all tasks in parallel
+            if tasks:
+                phase4_results = await asyncio.gather(*tasks, return_exceptions=True)
+
+                # Extract results from tasks
+                if isinstance(phase4_results, dict):
+                    results = phase4_results
+                else:
+                    results = {}
+                    for i, task in enumerate(tasks):
+                        if isinstance(task, dict):
+                            results.update(task)
+                        logger.debug(f"Phase 4 analysis completed: {task}")
+
+            logger.debug(f"Phase 4 analysis results: {results}")
+
+        except Exception as e:
+            logger.error(f"Error in Phase 4 analysis for bill {bill.claim_id}: {e}")
+            results = {"error": str(e)}
+
+        return results
+
     async def evaluate_bill(self, bill_id: str) -> EvaluationResult:
         """
         Evaluate a single bill against all rules.
@@ -318,6 +401,9 @@ class RuleEngine:
             # Save compliance checks to database
             await self._save_compliance_checks(bill, chain_result.results)
 
+            # Run Phase 4 analysis in parallel
+            phase4_results = await self._run_phase4_analysis(bill, enriched_context)
+
             # Update statistics
             self.stats["bills_evaluated"] += 1
             self.stats["rules_executed"] += len(chain_result.results)
@@ -333,6 +419,7 @@ class RuleEngine:
                 claim_id=bill_id,
                 chain_result=chain_result,
                 enriched_context=enriched_context,
+                phase4_results=phase4_results,
                 created_at=datetime.utcnow()
             )
 

@@ -2,7 +2,10 @@
 import pytest
 import sys
 
-sys.path.insert(0, "/Users/calebrosario/Documents/sandbox/healthcare-auditor/backend")
+sys.path.insert(
+    0,
+    "/Users/calebrosario/Documents/sandbox/healthcare-auditor/.worktrees/fraud-detection-ml/backend",
+)
 
 from app.core.risk_scoring import RiskScoringEngine
 
@@ -20,7 +23,7 @@ async def test_calculate_composite_score():
     result = await engine.calculate_composite_score(scores)
     assert "final_fraud_score" in result
     assert "risk_level" in result
-    assert "final_fraud_score" < 1.0
+    assert result["final_fraud_score"] < 1.0
 
 
 def test_update_weights():

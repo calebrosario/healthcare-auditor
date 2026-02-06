@@ -1,6 +1,9 @@
 """
 Healthcare Auditor FastAPI Application.
 """
-from .main import app
 
-__all__ = ["app"]
+def get_app():
+    from .main import app
+    return app
+
+__all__ = ["get_app"]
