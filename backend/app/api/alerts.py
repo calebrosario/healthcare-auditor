@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..core.database import get_db
-from ...models.alert import Alert, AlertType, AlertStatus
+from ..models.alert import Alert, AlertType, AlertStatus
 from ..security import require_auth
 
 
