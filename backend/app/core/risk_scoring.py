@@ -1,9 +1,9 @@
-backend/app/core/risk_scoring.py
 """
 Combined risk scoring system integrating all analysis layers.
 """
 import logging
 from typing import Dict, Any, Optional
+from ..config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -17,20 +17,15 @@ class RiskScoringEngine:
     ):
         """
         Initialize risk scoring engine.
-
+        
         Args:
-            weights: Optional custom weights (default: rules=0.25, ml=0.35, network=0.25, nlp=0.15)
+            weights: Optional custom weights (default from config)
         """
-        self.weights = weights or {
-            'rules': 0.25,
-            'ml': 0.35,
-            'network': 0.25,
-            'nlp': 0.15
-        }
-
+        self.weights = weights or settings.SCORING_WEIGHTS
+        
         self.thresholds = {
-            'high': 0.7,
-            'medium': 0.4
+            'high': settings.HIGH_RISK_THRESHOLD,
+            'medium': settings.MEDIUM_RISK_THRESHOLD
         }
 
         self.stats = {

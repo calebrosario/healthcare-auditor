@@ -1,4 +1,3 @@
-backend/app/core/ml_models.py
 """
 Machine learning models for fraud detection.
 """
@@ -9,6 +8,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 from sklearn.ensemble import RandomForestClassifier, IsolationForest
 from sklearn.preprocessing import StandardScaler
+from sklearn.exceptions import NotFittedError
 
 logger = logging.getLogger(__name__)
 
@@ -93,8 +93,23 @@ class RandomForestModel:
         logger.info(f"RandomForestModel saved to {path}")
 
     def load_model(self, path: str) -> None:
-        """Load model from disk."""
+        import os
+        import hashlib
+        from pathlib import Path
+
+        model_path = Path(path)
+        
+        if not model_path.exists():
+            raise FileNotFoundError(f"Model file not found: {path}")
+
         data = joblib.load(path)
+
+        if not isinstance(data, dict):
+            raise ValueError(f"Invalid model file format: expected dict, got {type(data)}")
+
+        if 'model' not in data or 'scaler' not in data:
+            raise ValueError("Invalid model file: missing 'model' or 'scaler' keys")
+
         self.model = data['model']
         self.scaler = data['scaler']
         self.is_trained = True
@@ -171,8 +186,19 @@ class IsolationForestModel:
         logger.info(f"IsolationForestModel saved to {path}")
 
     def load_model(self, path: str) -> None:
-        """Load model from disk."""
+        from pathlib import Path
+        from sklearn.ensemble import IsolationForest
+
+        model_path = Path(path)
+        
+        if not model_path.exists():
+            raise FileNotFoundError(f"Model file not found: {path}")
+
         self.model = joblib.load(path)
+
+        if not isinstance(self.model, IsolationForest):
+            raise ValueError(f"Invalid model type: expected IsolationForest, got {type(self.model)}")
+
         self.is_trained = True
         logger.info(f"IsolationForestModel loaded from {path}")
 
@@ -243,13 +269,17 @@ class MLModelEngine:
                 'individual_scores': scores
             }
 
-        except Exception as e:
-            logger.error(f"MLModelEngine.predict_fraud: {e}")
+        except (ValueError, TypeError, KeyError, NotFittedError) as e:
+            logger.error(f"MLModelEngine.predict_fraud: {type(e).__name__}: {e}")
             self.stats['errors'] += 1
             return {
                 'fraud_probability': 0.5,
                 'individual_scores': {'random_forest': 0.5, 'isolation_forest': 0.0}
             }
+        except Exception as e:
+            logger.error(f"MLModelEngine.predict_fraud: Unexpected error: {type(e).__name__}: {e}")
+            self.stats['errors'] += 1
+            raise
 
     def get_stats(self) -> Dict[str, int]:
         """Get prediction statistics."""

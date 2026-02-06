@@ -116,13 +116,16 @@ async def validate_bill(
     5. Compliance checks
     """
     from ..core.rules_engine import RuleEngine
+    from ..models.bill import Bill
+    from ..models.provider import Provider
     from sqlalchemy import select
-    from sqlalchemy.orm import selectinload
+    from sqlalchemy.orm import selectinload, joinedload
 
-    # Find bill by claim ID (or patient_id + provider_id + date)
-    stmt = select(Bill).where(
+    stmt = select(Bill).join(
+        Provider, Bill.provider_id == Provider.id
+    ).where(
         (Bill.patient_id == bill.patient_id) &
-        (Bill.provider_id == bill.provider_id) &
+        (Provider.npi == bill.provider_npi) &
         (Bill.bill_date == bill.bill_date)
     ).options(selectinload(Bill.provider))
     
