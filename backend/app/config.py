@@ -69,13 +69,10 @@ class Settings(BaseSettings):
     # External APIs
     CMS_API_KEY: str = ""
     AMA_CPT_API_KEY: str = ""
-    
+
     # Logging
     LOG_LEVEL: str = "INFO"
     SENTRY_DSN: str = ""
-    
-    class Config:
-        case_sensitive = False
 
 
 @lru_cache()

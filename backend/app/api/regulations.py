@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..core.database import get_db
-from ..models.regulation import Regulation, RegulationCategory, RegulationType
+from ...models.regulation import Regulation, RegulationCategory, RegulationType
 
 
 router = APIRouter()
