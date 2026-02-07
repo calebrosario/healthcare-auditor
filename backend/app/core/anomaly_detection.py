@@ -11,11 +11,17 @@ from collections import deque
 
 logger = logging.getLogger(__name__)
 
+Z_SCORE_THRESHOLD = 3.0
+BENFORDS_P_VALUE_THRESHOLD = 0.05
+FREQ_SPIKE_WINDOW_MINUTES = 10
+FREQ_SPIKE_THRESHOLD_MULTIPLIER = 3.0
+MIN_BENFORDS_SAMPLE_SIZE = 10
+
 
 class AnomalyDetection:
     """Statistical anomaly detection using Z-score, Benford's Law, frequency spikes."""
 
-    async def z_score_anomaly(self, values: List[float], threshold: float = 3.0) -> List[float]:
+    async def z_score_anomaly(self, values: List[float], threshold: float = Z_SCORE_THRESHOLD) -> List[float]:
         """
         Calculate Z-scores for values to detect outliers.
 
@@ -23,7 +29,7 @@ class AnomalyDetection:
 
         Args:
             values: List of numeric values (e.g., billed amounts)
-            threshold: Z-score threshold for anomaly (default: 3.0)
+            threshold: Z-score threshold for anomaly (default: Z_SCORE_THRESHOLD)
 
         Returns:
             List of Z-scores, one per input value
@@ -85,7 +91,7 @@ class AnomalyDetection:
             'p_value': float(p_value),
             'observed': observed_freqs,
             'expected': expected_freqs,
-            'is_anomaly': p_value < 0.05
+            'is_anomaly': p_value < BENFORDS_P_VALUE_THRESHOLD
         }
 
         logger.debug(f"benfords_law: chi2={chi2:.2f}, p={p_value:.4f}, is_anomaly={result['is_anomaly']}")
