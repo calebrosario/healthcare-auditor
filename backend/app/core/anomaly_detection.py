@@ -7,6 +7,7 @@ import numpy as np
 from scipy import stats
 from typing import List, Dict, Any, Tuple
 from datetime import datetime, timedelta
+from collections import deque
 
 logger = logging.getLogger(__name__)
 
@@ -115,27 +116,35 @@ class AnomalyDetection:
         dt_objects = [datetime.fromisoformat(ts) for ts in timestamps]
         dt_objects.sort()
 
-        # Count events in rolling windows
+        # Count events in rolling windows using sliding window (O(n) instead of O(n²))
         spikes = []
         window_delta = timedelta(minutes=window_minutes)
+        window = deque()
+        all_window_counts = []
 
+        # Single pass: maintain sliding window of events within window_minutes
+        for dt in dt_objects:
+            # Add current timestamp to window
+            window.append(dt)
+
+            # Remove events that fell outside the window
+            while window and dt - window[0] > window_delta:
+                window.popleft()
+
+            count = len(window)
+            all_window_counts.append(count)
+
+        # Calculate statistics from all window counts
+        if len(all_window_counts) < 2:
+            logger.debug("frequency_spike_detection: Not enough data for statistical analysis")
+            return []
+
+        expected = np.mean(all_window_counts)
+        std = np.std(all_window_counts)
+
+        # Detect spikes
         for i, dt in enumerate(dt_objects):
-            window_start = dt - window_delta
-            window_events = [t for t in dt_objects if window_start <= t <= dt]
-            count = len(window_events)
-
-            # Calculate expected count (mean of other windows)
-            all_window_counts = []
-            for j, d in enumerate(dt_objects):
-                ws = d - window_delta
-                we = [t for t in dt_objects if ws <= t <= d]
-                all_window_counts.append(len(we))
-
-            if len(all_window_counts) < 2:
-                expected = count
-            else:
-                expected = np.mean(all_window_counts)
-                std = np.std(all_window_counts)
+            count = all_window_counts[i]
 
             if std > 0:
                 z_score = (count - expected) / std
