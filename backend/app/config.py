@@ -2,6 +2,7 @@
 Application configuration management.
 """
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
 from typing import List
 from functools import lru_cache
 
@@ -35,7 +36,7 @@ class Settings(BaseSettings):
     CELERY_RESULT_BACKEND: str = "redis://localhost:6379/1"
     
     # Security
-    SECRET_KEY: str = "your-secret-key-change-in-production"
+    SECRET_KEY: str = ""
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
@@ -56,7 +57,30 @@ class Settings(BaseSettings):
     ALERT_PRIORITY_HIGH: float = 0.95
     ALERT_PRIORITY_MEDIUM: float = 0.80
     ALERT_PRIORITY_LOW: float = 0.65
-    
+
+    # ML Model Settings
+    ML_MODEL_PATH: str = "/tmp/ml_models"
+    MODEL_VERSION: str = "1.0"
+    RETRAIN_INTERVAL_DAYS: int = 7
+    FEATURE_COLUMNS: List[str] = [
+        "billed_amount",
+        "amount_zscore",
+        "provider_claim_count",
+        "provider_avg_ratio"
+    ]
+    SCORING_WEIGHTS: dict = {
+        "rules": 0.25,
+        "ml": 0.35,
+        "network": 0.25,
+        "nlp": 0.15
+    }
+    HIGH_RISK_THRESHOLD: float = 0.7
+    MEDIUM_RISK_THRESHOLD: float = 0.4
+
+    # External APIs
+    NCCI_API_ENABLED: bool = False
+    FEE_SCHEDULE_ENABLED: bool = False
+
     # Knowledge Graph
     KG_CACHE_TTL_SECONDS: int = 3600
     MAX_RELATIONSHIP_DEPTH: int = 5
@@ -69,13 +93,20 @@ class Settings(BaseSettings):
     # External APIs
     CMS_API_KEY: str = ""
     AMA_CPT_API_KEY: str = ""
-    
+
     # Logging
     LOG_LEVEL: str = "INFO"
     SENTRY_DSN: str = ""
-    
-    class Config:
-        case_sensitive = False
+
+    @field_validator('SECRET_KEY')
+    @classmethod
+    def validate_secret_key(cls, v: str) -> str:
+        if not v or v == "":
+            raise ValueError(
+                "SECRET_KEY must be set in environment variables. "
+                "Generate a secure key with: python -c 'import secrets; print(secrets.token_urlsafe(32))'"
+            )
+        return v
 
 
 @lru_cache()

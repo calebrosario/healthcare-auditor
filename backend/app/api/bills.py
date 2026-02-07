@@ -7,7 +7,8 @@ from typing import List, Optional
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..core.database import get_db
-from ..models.bill import Bill, BillStatus
+from ..core.neo4j import get_neo4j
+from models.bill import Bill, BillStatus
 from ..security import require_auth
 
 
@@ -39,13 +40,19 @@ class BillValidationRequest(BaseModel):
 
 
 class BillValidationResponse(BaseModel):
-    """Response with validation results."""
+    """Response with validation results including Phase 4 analysis."""
     claim_id: str
     fraud_score: float
     fraud_risk_level: str
     compliance_score: float
     issues: List[str]
     warnings: List[str]
+    code_legality_score: Optional[float] = None
+    ml_fraud_probability: Optional[float] = None
+    network_risk_score: Optional[float] = None
+    anomaly_flags: Optional[List[str]] = None
+    code_violations: Optional[List[str]] = None
+    phase4_stats: Optional[Dict[str, Any]] = None
 
 
 @router.post("", response_model=BillResponse)
@@ -88,13 +95,14 @@ async def get_bill(
     """
     Get a specific bill by claim ID.
     """
-    raise HTTPException(status_code=404, detail="Bill not found - TODO: Implement database")
+    raise HTTPException(status_code=501, detail="Not implemented")
 
 
 @router.post("/validate", response_model=BillValidationResponse)
 async def validate_bill(
     bill: BillValidationRequest,
     db: AsyncSession = Depends(get_db),
+    neo4j: AsyncSession = Depends(get_neo4j),
     user_id: str = Depends(require_auth)
 ):
     """
@@ -107,16 +115,61 @@ async def validate_bill(
     4. Network analysis
     5. Compliance checks
     """
-    # TODO: Implement full validation pipeline
-    # See phase 3 tasks for detailed implementation
+    from ..core.rules_engine import RuleEngine
+    from ..models.bill import Bill
+    from ..models.provider import Provider
+    from sqlalchemy import select
+    from sqlalchemy.orm import selectinload, joinedload
+
+    stmt = select(Bill).join(
+        Provider, Bill.provider_id == Provider.id
+    ).where(
+        (Bill.patient_id == bill.patient_id) &
+        (Provider.npi == bill.provider_npi) &
+        (Bill.bill_date == bill.bill_date)
+    ).options(selectinload(Bill.provider))
     
+    result = await db.execute(stmt)
+    bill_record = result.scalar_one_or_none()
+
+    if not bill_record:
+        raise HTTPException(status_code=404, detail=f"Bill not found: patient_id={bill.patient_id}")
+
+    # Create rules engine and evaluate
+    engine = RuleEngine(db, neo4j)
+    evaluation_result = await engine.evaluate_bill(bill_record.claim_id)
+
+    # Determine risk level
+    if evaluation_result.chain_result.fraud_score >= 0.8:
+        risk_level = "high"
+    elif evaluation_result.chain_result.fraud_score >= 0.5:
+        risk_level = "medium"
+    else:
+        risk_level = "low"
+
+    # Extract Phase 4 results
+    phase4_data = evaluation_result.phase4_results or {}
+
+    code_legality_score = phase4_data.get("legality_score")
+    ml_fraud_probability = phase4_data.get("fraud_probability")
+    network_risk_score = phase4_data.get("network_risk_score")
+    anomaly_flags = phase4_data.get("anomaly_flags", [])
+    code_violations = phase4_data.get("code_violations", [])
+    phase4_stats = phase4_data.get("stats", {})
+
     return BillValidationResponse(
-        claim_id=f"tmp-{bill.patient_id}",
-        fraud_score=0.15,
-        fraud_risk_level="low",
-        compliance_score=0.95,
-        issues=[],
-        warnings=["Placeholder - TODO: Implement validation"]
+        claim_id=evaluation_result.chain_result.claim_id,
+        fraud_score=evaluation_result.chain_result.fraud_score,
+        fraud_risk_level=risk_level,
+        compliance_score=evaluation_result.chain_result.compliance_score,
+        issues=evaluation_result.chain_result.issues,
+        warnings=evaluation_result.chain_result.warnings,
+        code_legality_score=code_legality_score,
+        ml_fraud_probability=ml_fraud_probability,
+        network_risk_score=network_risk_score,
+        anomaly_flags=anomaly_flags,
+        code_violations=code_violations,
+        phase4_stats=phase4_stats
     )
 
 

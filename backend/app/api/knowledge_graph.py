@@ -57,7 +57,7 @@ async def get_graph_node(node_id: str):
     #         raise HTTPException(status_code=404, detail="Node not found")
     #     return node
     
-    raise HTTPException(status_code=501, detail="Not implemented - TODO: Connect Neo4j")
+    #     raise HTTPException(status_code=501, detail="Not implemented")
 
 
 @router.get("/node/{node_id}/neighbors")
@@ -123,7 +123,7 @@ async def query_graph(request: GraphQueryRequest):
     return {
         "query_type": request.query_type,
         "results": [],
-        "message": "Placeholder - TODO: Implement graph queries"
+        "message": "Not implemented"
     }
 
 
@@ -165,5 +165,5 @@ async def rebuild_knowledge_graph():
     
     return {
         "status": "started",
-        "message": "Knowledge graph rebuild initiated - TODO: Implement"
+        "message": "Not implemented"
     }

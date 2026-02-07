@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..core.database import get_db
-from ..models.provider import Provider, ProviderType
+from models.provider import Provider, ProviderType
 
 
 router = APIRouter()
@@ -52,7 +52,8 @@ async def get_provider(
     """
     Get a specific provider by NPI.
     """
-    raise HTTPException(status_code=404, detail="Provider not found - TODO: Implement database")
+    
+    raise HTTPException(status_code=501, detail="Not implemented")
 
 
 @router.get("/{npi}/network")
