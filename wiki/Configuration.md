@@ -1,5 +1,7 @@
 # Configuration Guide
 
+**Tags**: #configuration #environment #settings #database #security #logging
+
 Complete guide to configuring Healthcare Auditor for development, staging, and production environments.
 
 ## Table of Contents

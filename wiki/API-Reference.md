@@ -1,5 +1,7 @@
 # API Reference
 
+**Tags**: #api #rest #fastapi #endpoints #authentication #documentation
+
 Complete documentation for all Healthcare Auditor API endpoints.
 
 ## Table of Contents

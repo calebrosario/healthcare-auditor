@@ -1,5 +1,7 @@
 # Architecture Guide
 
+**Tags**: #architecture #system-design #database #neo4j #postgresql #redis #ml #api #scalability #security
+
 This document provides a comprehensive overview of the Healthcare Auditor system architecture, including components, data flow, and design decisions.
 
 ## Table of Contents
@@ -32,39 +34,30 @@ The system processes medical bills through these layers in parallel, providing c
 
 ## High-Level Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                           API Gateway                               │
-│                        (FastAPI + Uvicorn)                        │
-└─────────────────────────────┬───────────────────────────────────────────┘
-                              │
-        ┌─────────────────────┼─────────────────────┐
-        │                     │                     │
-        ▼                     ▼                     ▼
-┌───────────────────┐ ┌──────────────────┐ ┌─────────────────┐
-│  Rules Engine     │ │  ML Pipeline     │ │  Network        │
-│  - 9 rules       │ │  - Anomalies    │ │  Analysis       │
-│  - Neo4j ctx     │ │  - Models       │ │  - PageRank     │
-└─────────┬─────────┘ └────────┬────────┘ └────────┬────────┘
-          │                     │                     │
-          └─────────────────────┼─────────────────────┘
-                            │
-                            ▼
-                   ┌─────────────────┐
-                   │ Risk Scoring   │
-                   │ - Weighted     │
-                   │   Ensemble     │
-                   └─────────┬─────┘
-                             │
-        ┌────────────────────┼────────────────────┐
-        │                    │                    │
-        ▼                    ▼                    ▼
-┌─────────────────┐ ┌──────────────┐ ┌─────────────┐
-│  PostgreSQL     │ │    Neo4j     │ │   Redis     │
-│  - Bills       │ │  - Provider   │ │  - Cache    │
-│  - Providers   │ │    Networks   │ │  - Queue    │
-│  - Compliance │ │  - Relations  │ │             │
-└─────────────────┘ └──────────────┘ └─────────────┘
+```mermaid
+flowchart TD
+    API[API Gateway<br/>FastAPI + Uvicorn]
+
+    API --> RE[Rules Engine<br/>9 rules, Neo4j ctx]
+    API --> ML[ML Pipeline<br/>Anomalies, Models]
+    API --> NA[Network Analysis<br/>PageRank]
+
+    RE --> RS[Risk Scoring<br/>Weighted Ensemble]
+    ML --> RS
+    NA --> RS
+
+    RS --> PG[PostgreSQL<br/>Bills, Providers, Compliance]
+    RS --> N4[Neo4j<br/>Provider Networks, Relations]
+    RS --> RD[Redis<br/>Cache, Queue]
+
+    style API fill:#e1f5ff
+    style RE fill:#e8f5e9
+    style ML fill:#fff3e0
+    style NA fill:#f3e5f5
+    style RS fill:#fff9c4
+    style PG fill:#c8e6c9
+    style N4 fill:#ffe0b2
+    style RD fill:#e1bee7
 ```
 
 ---
@@ -243,101 +236,80 @@ The system processes medical bills through these layers in parallel, providing c
 
 ### Bill Validation Flow
 
-```
-1. API Request
-   POST /api/v1/bills/validate
-   {
-     "patient_id": "PAT-001",
-     "provider_npi": "1234567890",
-     "procedure_code": "99214",
-     "diagnosis_code": "I10",
-     "billed_amount": 150.00
-   }
+```mermaid
+flowchart TD
+    A[API Request<br/>POST /api/v1/bills/validate] --> B[Load Bill Data<br/>PostgreSQL]
 
-2. Load Bill Data
-   PostgreSQL: SELECT * FROM bills WHERE claim_id = ?
+    B --> C[Enrich Context<br/>Parallel]
+    C --> C1[Neo4j<br/>Provider relationships]
+    C --> C2[Redis<br/>Cached billing codes]
+    C --> C3[PostgreSQL<br/>Provider baseline]
 
-3. Enrich Context (Parallel)
-   ├─> Neo4j: Provider relationships
-   ├─> Redis: Cached billing codes
-   └─> PostgreSQL: Provider baseline
+    C --> D[Execute Detection Layers<br/>Parallel]
 
-4. Execute Detection Layers (Parallel)
-   ├─> Rules Engine
-   │   ├─> Coding Rules
-   │   ├─> Medical Necessity
-   │   ├─> Frequency Rules
-   │   └─> Billing Rules
-   ├─> ML Pipeline
-   │   ├─> Statistical Anomalies
-   │   ├─> ML Predictions
-   │   ├─> Network Analysis
-   │   └─> Code Legality
-   └─> Redis: Check cache
+    D --> E1[Rules Engine]
+    E1 --> E1a[Coding Rules]
+    E1 --> E1b[Medical Necessity]
+    E1 --> E1c[Frequency Rules]
+    E1 --> E1d[Billing Rules]
 
-5. Aggregate Scores
-   ├─> Fraud Score (0-1)
-   ├─> Compliance Score (0-1)
-   ├─> Risk Level (high/medium/low)
-   └─> Issues & Warnings
+    D --> E2[ML Pipeline]
+    E2 --> E2a[Statistical Anomalies]
+    E2 --> E2b[ML Predictions]
+    E2 --> E2c[Network Analysis]
+    E2 --> E2d[Code Legality]
 
-6. Cache Result
-   Redis: SET claim_id:result TTL=3600
+    D --> E3[Redis<br/>Check cache]
 
-7. Save to Database
-   PostgreSQL: INSERT INTO compliance_checks
+    E1 --> F[Aggregate Scores]
+    E2 --> F
+    E3 --> F
 
-8. Return Response
-   {
-     "fraud_score": 0.25,
-     "fraud_risk_level": "low",
-     "compliance_score": 0.85,
-     "ml_fraud_probability": 0.20,
-     "network_risk_score": 0.15,
-     "anomaly_flags": ["z_score_outlier"],
-     "code_violations": [],
-     "phase4_stats": {...}
-   }
+    F --> G[Cache Result<br/>Redis TTL=3600]
+    G --> H[Save to Database<br/>compliance_checks]
+    H --> I[Return Response<br/>fraud_score, compliance_score, etc.]
+
+    style A fill:#e1f5ff
+    style B fill:#e8f5e9
+    style C fill:#fff3e0
+    style D fill:#f3e5f5
+    style F fill:#fff9c4
+    style I fill:#c8e6c9
 ```
 
 ### Knowledge Graph Construction Flow
 
-```
-1. Start Script
-   python scripts/build_graph.py
+```mermaid
+flowchart TD
+    A[Start Script<br/>build_graph.py] --> B[Initialize PostgreSQL<br/>AsyncSessionLocal, migrations]
+    B --> C[Initialize Neo4j<br/>constraints, indexes]
 
-2. Initialize PostgreSQL
-   AsyncSessionLocal
-   Run migrations
+    C --> D[Load Entities<br/>Batch 1000]
+    D --> D1[Providers]
+    D --> D2[Hospitals]
+    D --> D3[Insurers]
+    D --> D4[Regulations]
+    D --> D5[Bills & Patients]
 
-3. Initialize Neo4j
-   Create constraints
-   Create indexes
+    D --> E[Create Relationships<br/>Batch]
+    E --> E1[PROVIDES_AT]
+    E --> E2[INSURES]
+    E --> E3[CONTRACT_WITH]
+    E --> E4[OWNS_FACILITY]
+    E --> E5[AFFILIATED_WITH]
+    E --> E6[APPLIES_TO]
+    E --> E7[FLAGGED_FOR_FRAUD]
 
-4. Load Entities (Batch)
-   ├─> Providers (1000/batch)
-   ├─> Hospitals
-   ├─> Insurers
-   ├─> Regulations
-   └─> Bills & Patients
+    E --> F[Report Statistics<br/>50K nodes, 120K edges, 45s]
+    F --> G[Cleanup<br/>Close PostgreSQL & Neo4j]
 
-5. Create Relationships (Batch)
-   ├─> PROVIDES_AT
-   ├─> INSURES
-   ├─> CONTRACT_WITH
-   ├─> OWNS_FACILITY
-   ├─> AFFILIATED_WITH
-   ├─> APPLIES_TO
-   └─> FLAGGED_FOR_FRAUD
-
-6. Report Statistics
-   Nodes created: 50,000
-   Edges created: 120,000
-   Duration: 45s
-
-7. Cleanup
-   Close PostgreSQL connection
-   Close Neo4j driver
+    style A fill:#e1f5ff
+    style B fill:#e8f5e9
+    style C fill:#fff3e0
+    style D fill:#f3e5f5
+    style E fill:#e1bee7
+    style F fill:#fff9c4
+    style G fill:#c8e6c9
 ```
 
 ---
@@ -629,21 +601,29 @@ app.add_middleware(
 - Memory configuration for dataset size
 
 #### Caching Strategy
-```
-Layer 1: Redis Cache (TTL=3600s)
-  ├─> Billing codes (high frequency)
-  ├─> Provider profiles (medium frequency)
-  └─> Validation results (low frequency)
+```mermaid
+flowchart TD
+    subgraph Layer1["Layer 1: Redis Cache (TTL=3600s)"]
+        L1A[Billing codes<br/>high frequency]
+        L1B[Provider profiles<br/>medium frequency]
+        L1C[Validation results<br/>low frequency]
+    end
 
-Layer 2: In-Memory (Request scope)
-  ├─> Current bill context
-  ├─> Rule execution results
-  └─> ML model inferences
+    subgraph Layer2["Layer 2: In-Memory (Request scope)"]
+        L2A[Current bill context]
+        L2B[Rule execution results]
+        L2C[ML model inferences]
+    end
 
-Layer 3: Database (Persistent)
-  ├─> Full bill records
-  ├─> Historical compliance checks
-  └─> Audit trails
+    subgraph Layer3["Layer 3: Database (Persistent)"]
+        L3A[Full bill records]
+        L3B[Historical compliance checks]
+        L3C[Audit trails]
+    end
+
+    style Layer1 fill:#e8f5e9
+    style Layer2 fill:#fff3e0
+    style Layer3 fill:#f3e5f5
 ```
 
 #### Async Processing
@@ -675,30 +655,34 @@ async def validate_bill(bill_id: str):
 
 ### Horizontal Scaling
 
-#### API Layer
-```
-Load Balancer (Nginx)
-    │
-    ├─> API Instance 1 (uvicorn)
-    ├─> API Instance 2 (uvicorn)
-    └─> API Instance 3 (uvicorn)
-```
+```mermaid
+flowchart TD
+    subgraph APILayer["API Layer"]
+        LB[Load Balancer<br/>Nginx]
+        LB --> API1[API Instance 1<br/>uvicorn]
+        LB --> API2[API Instance 2<br/>uvicorn]
+        LB --> API3[API Instance 3<br/>uvicorn]
+    end
 
-#### Database Layer
-```
-Primary PostgreSQL (Master)
-    │ (Streaming Replication)
-    ├─> Replica 1 (Read-only)
-    └─> Replica 2 (Read-only)
-```
+    subgraph DBLayer["Database Layer"]
+        PG[Primary PostgreSQL<br/>Master]
+        PG --> PG1[Replica 1<br/>Read-only]
+        PG --> PG2[Replica 2<br/>Read-only]
+    end
 
-#### Graph Layer
-```
-Neo4j Cluster (Causal Cluster)
-    │
-    ├─> Core Instance 1
-    ├─> Core Instance 2
-    └─> Read Replica 1
+    subgraph GraphLayer["Graph Layer"]
+        NEO[Neo4j Cluster<br/>Causal Cluster]
+        NEO --> NEO1[Core Instance 1]
+        NEO --> NEO2[Core Instance 2]
+        NEO --> NEO3[Read Replica 1]
+    end
+
+    style APILayer fill:#e1f5ff
+    style DBLayer fill:#e8f5e9
+    style GraphLayer fill:#fff3e0
+    style LB fill:#ffcdd2
+    style PG fill:#ffcdd2
+    style NEO fill:#ffcdd2
 ```
 
 ### Vertical Scaling
