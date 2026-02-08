@@ -1,7 +1,7 @@
 """
 Billing code models (CPT, ICD-10, HCPCS, DRG, NDC).
 """
-from sqlalchemy import Column, Integer, String, DateTime, Text, Float, Boolean, Enum
+from sqlalchemy import Column, Integer, String, DateTime, Text, Float, Boolean, Enum, ForeignKey
 from sqlalchemy.orm import relationship
 from .base import Base
 
@@ -23,7 +23,7 @@ class BillingCode(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     code = Column(String(20), nullable=False, index=True, unique=True)
-    code_type = Column(Enum(CodeType), nullable=False, index=True)
+    code_type = Column(String(10), nullable=False, index=True)
     description = Column(Text, nullable=True)
     effective_date = Column(DateTime, nullable=False, index=True)
     termination_date = Column(DateTime, nullable=True, index=True)
@@ -33,7 +33,7 @@ class BillingCode(Base):
     
     # Relationships
     relationships = relationship("CodeRelationship", back_populates="source_code")
-    related_to = relationship("CodeRelationship", foreign_keys=[ "target_code_id"], back_populates="target_code")
+    related_to = relationship("CodeRelationship", foreign_keys=["target_code_id"], back_populates="target_code")
     claims = relationship("Claim", back_populates="claims")
     
     def __repr__(self):

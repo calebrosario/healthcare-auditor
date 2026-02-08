@@ -44,7 +44,7 @@ class CodeLegalityAnalyzer:
             Dictionary with compatibility status and violations
         """
         try:
-            from ..models.billing_code import BillingCode
+            from models.billing_code import BillingCode
 
             stmt = select(BillingCode).where(
                 (BillingCode.code == procedure_code) &
