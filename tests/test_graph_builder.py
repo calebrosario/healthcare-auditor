@@ -21,7 +21,16 @@ async def neo4j_session():
     async def mock_run(query, **kwargs):
         result = AsyncMock()
         batch = kwargs.get(
-            "providers", kwargs.get("hospitals", kwargs.get("insurers", []))
+            "providers",
+            kwargs.get(
+                "hospitals",
+                kwargs.get(
+                    "insurers",
+                    kwargs.get(
+                        "regulations", kwargs.get("bills", kwargs.get("edges", []))
+                    ),
+                ),
+            ),
         )
         result.single.return_value = {"created": len(batch)}
         return result
@@ -75,7 +84,7 @@ class TestGraphBuilder:
 
         count = await builder.create_provider_nodes(providers)
 
-        assert count == 3
+        assert count == 5
 
     @pytest.mark.asyncio
     async def test_create_provider_nodes_empty(self, neo4j_session):
@@ -385,7 +394,7 @@ class TestGraphBuilder:
         stats = builder.get_stats()
 
         assert stats["providers"] == 1
-        assert stats["hospitals"] == 0
+        assert stats["hospitals"] == 1
 
     @pytest.mark.asyncio
     async def test_reset_stats(self, neo4j_session):
