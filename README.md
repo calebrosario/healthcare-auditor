@@ -303,6 +303,18 @@ python scripts/build_graph.py
 
 ## Documentation
 
+📖 **[View Full Wiki](wiki/)** - Comprehensive documentation including:
+- **Getting Started** - Installation, quick start guide
+- **Architecture** - System design, data flow, and components
+- **API Reference** - Complete API documentation with examples
+- **Configuration** - Environment variables and settings
+- **Development** - Coding standards and contribution guide
+- **Testing** - Testing practices and framework guide
+- **Deployment** - Production setup (Docker, Kubernetes, Cloud)
+- **Troubleshooting** - Common issues and solutions
+- **Contributing** - Contribution guidelines and workflow
+
+### Internal Documentation
 - [Knowledge Graph State Machine](docs/KNOWLEDGE_GRAPH_STATE_MACHINE.md)
 - [Rules Engine State Machine](docs/RULES_ENGINE_STATE_MACHINE.md)
 - [ML Pipeline State Machine](docs/ML_PIPELINE_STATE_MACHINE.md)
