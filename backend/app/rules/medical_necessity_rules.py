@@ -1,7 +1,7 @@
 """
 Medical necessity evidence validation rules.
 """
-from typing import Dict, Any
+from typing import Dict, Any, List
 from .base import BaseRule, RuleResult
 
 

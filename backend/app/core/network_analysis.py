@@ -1,4 +1,3 @@
-backend/app/core/network_analysis.py
 """
 Network analysis using Neo4j graph algorithms.
 """

@@ -4,7 +4,7 @@ import sys
 
 sys.path.insert(
     0,
-    "/Users/calebrosario/Documents/sandbox/healthcare-auditor/.worktrees/fraud-detection-ml/backend",
+    "/Users/calebrosario/Documents/sandbox/healthcare-auditor/backend",
 )
 
 from app.core.risk_scoring import RiskScoringEngine
