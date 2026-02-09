@@ -12,18 +12,11 @@ from neo4j import AsyncSession as Neo4jSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from ..models.bill import Bill
-from ..models.compliance_check import ComplianceCheck, ComplianceStatus
-from .base import BaseRule, RuleResult, ChainResult, EvaluationResult
-from .coding_rules import ICD10ValidationRule, CPTValidationRule, DXPairValidationRule
-from .medical_necessity_rules import DocumentationCompletenessRule, MedicalNecessityScoreRule
-from .frequency_rules import ProcedureFrequencyRule, PatientFrequencyRule
-from .billing_rules import AmountLimitRule, DuplicateDetectionRule
-from .anomaly_detection import AnomalyDetection
-from .ml_models import MLModels
-from .network_analysis import NetworkAnalyzer
-from .code_legality import CodeLegalityAnalyzer
-from .risk_scoring import RiskScoringEngine
+from ..rules.base import BaseRule, RuleResult, ChainResult, EvaluationResult
+from ..rules.coding_rules import ICD10ValidationRule, CPTValidationRule, DXPairValidationRule
+from ..rules.medical_necessity_rules import DocumentationCompletenessRule, MedicalNecessityScoreRule
+from ..rules.frequency_rules import ProcedureFrequencyRule, PatientFrequencyRule
+from ..rules.billing_rules import AmountLimitRule, DuplicateDetectionRule
 
 
 # Configure logging
@@ -95,7 +88,7 @@ class RuleChain:
         final_decision = self._determine_final_decision(results, context)
 
         return ChainResult(
-            claim_id=getattr(bill, "claim_id", bill.get("claim_id", "unknown")),
+            claim_id=getattr(bill, "claim_id", "unknown"),
             results=results,
             final_decision=final_decision,
             fraud_score=self._calculate_fraud_score(results, context),
@@ -205,6 +198,14 @@ class RuleEngine:
             db: PostgreSQL async session
             neo4j: Neo4j async session (optional, for context enrichment)
         """
+        from ..models.bill import Bill
+        from ..models.compliance_check import ComplianceCheck, ComplianceStatus
+        from .anomaly_detection import AnomalyDetection
+        from .ml_models import MLModels
+        from .network_analysis import NetworkAnalyzer
+        from .code_legality import CodeLegalityAnalyzer
+        from .risk_scoring import RiskScoringEngine
+        
         self.db = db
         self.neo4j = neo4j
         self.rule_chain = RuleChain()
@@ -246,7 +247,7 @@ class RuleEngine:
 
         logger.info(f"Initialized {len(self.rule_chain.rules)} rules")
 
-    async def enrich_context(self, bill: Bill) -> Dict[str, Any]:
+    async def enrich_context(self, bill: Any) -> Dict[str, Any]:
         """
         Enrich bill context with Neo4j data.
 
@@ -304,7 +305,7 @@ class RuleEngine:
 
     async def _run_phase4_analysis(
         self,
-        bill: Bill,
+        bill: Any,
         context: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
@@ -461,7 +462,7 @@ class RuleEngine:
         logger.info(f"Batch evaluation complete: {len(results)}/{total_bills} bills processed")
         return results
 
-    async def _save_compliance_checks(self, bill: Bill, rule_results: List[RuleResult]) -> None:
+    async def _save_compliance_checks(self, bill: Any, rule_results: List[RuleResult]) -> None:
         """
         Save rule results to database as compliance checks.
 
