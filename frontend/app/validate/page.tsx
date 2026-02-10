@@ -5,7 +5,7 @@ import { api } from '../../lib/api';
 import { BillSubmission, ValidationReport } from '../../types';
 import Button from '../../components/ui/button';
 import Card from '../../components/ui/card';
-import alert from '../../components/ui/alert';
+import Alert from '../../components/ui/alert';
 
 export default function ValidatePage() {
   const [bill, setBill] = React.useState<BillSubmission>({
@@ -63,15 +63,13 @@ export default function ValidatePage() {
         className: 'text-3xl font-bold text-gray-900 mb-8',
       }, 'Validate Bill'),
 
-      React.createElement(Card, {
-        children: React.createElement('form', {
-          onSubmit: handleSubmit,
-          className: 'space-y-6',
-        }, [
+            React.createElement(Card, {}, React.createElement('form', {
+              onSubmit: handleSubmit,
+              className: 'space-y-6',
+            }, [
           error && React.createElement(Alert, {
             variant: 'error',
-            children: error,
-          }),
+          }, error),
 
           React.createElement('div', {
             className: 'grid grid-cols-1 md:grid-cols-2 gap-6',
@@ -245,17 +243,16 @@ export default function ValidatePage() {
               variant: 'primary',
               isLoading: loading,
               fullWidth: true,
-              children: 'Validate Bill',
-            }),
+            }, 'Validate Bill'),
           ]),
         ]),
       }),
 
       result && React.createElement(Card, {
         title: 'Validation Results',
-        children: React.createElement('div', {
-          className: 'space-y-6',
-        }, [
+      }, React.createElement('div', {
+        className: 'space-y-6',
+      }, [
           React.createElement('div', {
             className: `p-4 rounded-lg ${
               result.risk_level === 'high' ? 'bg-red-50 border-red-500' :

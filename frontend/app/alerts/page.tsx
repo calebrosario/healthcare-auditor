@@ -67,16 +67,15 @@ export default function AlertsPage() {
           className: 'text-3xl font-bold text-gray-900',
         }, 'Fraud Alerts'),
 
-        error && React.createElement(alert, {
-          variant: 'error',
-          children: error,
-        }),
+            error && React.createElement(alert, {
+              variant: 'error',
+            }, error),
 
         React.createElement(Card, {
           title: 'Filters',
-          children: React.createElement('div', {
-            className: 'grid grid-cols-1 md:grid-cols-4 gap-4',
-          }, [
+        }, React.createElement('div', {
+          className: 'grid grid-cols-1 md:grid-cols-4 gap-4',
+        }, [
             React.createElement('div', null, [
               React.createElement('label', {
                 className: 'block text-sm font-medium text-gray-700 mb-2',
@@ -152,8 +151,7 @@ export default function AlertsPage() {
             Object.keys(filter).length > 0 && React.createElement(Button, {
               fullWidth: true,
               onClick: () => setFilter({}),
-              children: 'Clear Filters',
-            }),
+            }, 'Clear Filters'),
           ]),
         ]),
       ]),
@@ -174,102 +172,97 @@ export default function AlertsPage() {
             filteredAlerts.map(alert =>
               React.createElement(Card, {
                 key: alert.id,
-                title: React.createElement('div', {
+                title: alert.claim_id,
+              }, React.createElement('div', {
+                className: 'space-y-4',
+              }, [
+                React.createElement('div', {
                   className: 'flex items-center justify-between mb-2',
                 }, [
-                  React.createElement('div', null, [
-                    React.createElement('span', {
-                      className: 'font-semibold',
-                    }, alert.claim_id),
-                    React.createElement('span', {
-                      className: `ml-2 px-2 py-1 rounded text-sm font-medium ${
-                        alert.risk_level === 'high' ? 'bg-red-600 text-white' :
-                        alert.risk_level === 'medium' ? 'bg-yellow-600 text-white' :
-                        'bg-green-600 text-white'
-                      }`,
-                    }, alert.risk_level.toUpperCase()),
-                  ]),
+                  React.createElement('span', {
+                    className: `ml-2 px-2 py-1 rounded text-sm font-medium ${
+                      alert.risk_level === 'high' ? 'bg-red-600 text-white' :
+                      alert.risk_level === 'medium' ? 'bg-yellow-600 text-white' :
+                      'bg-green-600 text-white'
+                    }`,
+                  }, alert.risk_level.toUpperCase()),
                   React.createElement('span', {
                     className: 'text-sm text-gray-500',
                   }, new Date(alert.created_at).toLocaleString()),
                 ]),
-              }),
-              React.createElement('div', {
-                className: 'grid grid-cols-2 gap-4 mb-4',
-              }, [
-                React.createElement('div', null, [
-                  React.createElement('div', {
-                    className: 'text-sm text-gray-600 mb-1',
-                  }, 'Composite Score:'),
-                  React.createElement('div', {
-                    className: 'text-2xl font-bold text-gray-900',
-                  }, alert.composite_score.toFixed(2)),
-                ]),
-                React.createElement('div', null, [
-                  React.createElement('div', {
-                    className: 'text-sm text-gray-600 mb-1',
-                  }, 'ML Probability:'),
-                  React.createElement('div', {
-                    className: 'text-2xl font-bold text-red-600',
-                  }, `${(alert.ml_fraud_probability * 100).toFixed(1)}%`),
-                ]),
-              ]),
-              React.createElement('div', {
-                className: 'border-t pt-4',
-              }, [
                 React.createElement('div', {
-                  className: 'text-sm text-gray-600 mb-2',
-                }, 'Triggered Rules:'),
+                  className: 'grid grid-cols-2 gap-4 mb-4',
+                }, [
+                  React.createElement('div', null, [
+                    React.createElement('div', {
+                      className: 'text-sm text-gray-600 mb-1',
+                    }, 'Composite Score:'),
+                    React.createElement('div', {
+                      className: 'text-2xl font-bold text-gray-900',
+                    }, alert.composite_score.toFixed(2)),
+                  ]),
+                  React.createElement('div', null, [
+                    React.createElement('div', {
+                      className: 'text-sm text-gray-600 mb-1',
+                    }, 'ML Probability:'),
+                    React.createElement('div', {
+                      className: 'text-2xl font-bold text-red-600',
+                    }, `${(alert.ml_fraud_probability * 100).toFixed(1)}%`),
+                  ]),
+                ]),
                 React.createElement('div', {
-                  className: 'flex flex-wrap gap-2',
-                }, alert.triggered_rules.slice(0, 3).map(rule =>
-                  React.createElement('span', {
-                    key: rule,
-                    className: 'px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm',
-                  }, rule),
-                ),
-                alert.triggered_rules.length > 3 && React.createElement('span', {
-                  className: 'text-sm text-gray-500',
-                }, `+${alert.triggered_rules.length - 3} more`),
-              ]),
+                  className: 'border-t pt-4',
+                }, [
+                  React.createElement('div', {
+                    className: 'text-sm text-gray-600 mb-2',
+                  }, 'Triggered Rules:'),
+                  React.createElement('div', {
+                    className: 'flex flex-wrap gap-2',
+                  }, alert.triggered_rules.slice(0, 3).map((rule: string) =>
+                    React.createElement('span', {
+                      key: rule,
+                      className: 'px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm',
+                    }, rule),
+                  ),
+                  alert.triggered_rules.length > 3 && React.createElement('span', {
+                    className: 'text-sm text-gray-500',
+                  }, `+${alert.triggered_rules.length - 3} more`),
+                ]),
 
-              alert.status === 'open' && React.createElement('div', {
-                className: 'flex gap-2 border-t pt-4',
-              }, [
-                React.createElement(Button, {
-                  onClick: () => handleStatusUpdate(alert.id, 'investigating'),
-                  variant: 'secondary',
-                  children: 'Investigate',
-                }),
-                React.createElement(Button, {
-                  onClick: () => handleStatusUpdate(alert.id, 'dismissed'),
-                  variant: 'danger',
-                  children: 'Dismiss',
-                }),
-              ]),
+                alert.status === 'open' && React.createElement('div', {
+                  className: 'flex gap-2 border-t pt-4',
+                }, [
+                  React.createElement(Button, {
+                    onClick: () => handleStatusUpdate(alert.id, 'investigating'),
+                    variant: 'secondary',
+                  }, 'Investigate'),
+                  React.createElement(Button, {
+                    onClick: () => handleStatusUpdate(alert.id, 'dismissed'),
+                    variant: 'danger',
+                  }, 'Dismiss'),
+                ]),
 
-              alert.status === 'investigating' && React.createElement('div', {
-                className: 'border-t pt-4',
-              }, [
-                React.createElement(Button, {
-                  onClick: () => handleStatusUpdate(alert.id, 'resolved'),
-                  variant: 'success',
-                  fullWidth: true,
-                  children: 'Mark as Resolved',
-                }),
-              ]),
+                alert.status === 'investigating' && React.createElement('div', {
+                  className: 'border-t pt-4',
+                }, [
+                  React.createElement(Button, {
+                    onClick: () => handleStatusUpdate(alert.id, 'resolved'),
+                    variant: 'success',
+                    fullWidth: true,
+                  }, 'Mark as Resolved'),
+                ]),
 
-              alert.status === 'resolved' && React.createElement('div', {
-                className: 'border-t pt-4',
-              }, [
-                React.createElement(Button, {
-                  onClick: () => handleStatusUpdate(alert.id, 'investigating'),
-                  variant: 'secondary',
-                  fullWidth: true,
-                  children: 'Reopen Investigation',
-                }),
-              ]),
-            ]),
+                alert.status === 'resolved' && React.createElement('div', {
+                  className: 'border-t pt-4',
+                }, [
+                  React.createElement(Button, {
+                    onClick: () => handleStatusUpdate(alert.id, 'investigating'),
+                    variant: 'secondary',
+                    fullWidth: true,
+                  }, 'Reopen Investigation'),
+                ]),
+              ])),
+            ),
           ),
         ]),
       ]),
