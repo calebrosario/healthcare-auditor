@@ -10,15 +10,78 @@ Healthcare Auditor is a production-ready system for detecting fraudulent medical
 
 ### Technology Stack
 
-- **Language**: Python 3.11+
-- **Backend**: FastAPI with async PostgreSQL
+- **Backend**: Python 3.11+ with FastAPI
 - **Knowledge Graph**: Neo4j for entity relationships
 - **Caching**: Redis 7
 - **Task Queue**: Celery for async processing
 - **Testing**: Pytest with pytest-asyncio
 
+### Frontend Stack
+
+- **Framework**: Next.js 15 with React 18
+- **Language**: TypeScript 5.5
+- **Styling**: Tailwind CSS 3.4
+- **Charts**: Recharts 2.12
+- **Graphs**: D3.js 7.4 for knowledge graph visualization
+- **State Management**: React hooks with local state
+- **API Client**: Custom fetch-based client with error handling
+
 ### Database Architecture
 
+```
+┌─────────────────────────────────────────────────┐
+│                  FastAPI Backend                │
+│                      │                              │
+│         ┌────────────┴────────────┐           │
+│         │   PostgreSQL (Primary)     │           │
+│         │   Bills, Providers, etc.     │           │
+│         └───────────────────────────────┘           │
+│                      │                              │
+│         ┌────────────┴────────────┐            │
+│         │   Neo4j (Graph)          │            │
+│         │   Provider Networks              │            │
+│         │   Regulation Relationships    │            │
+│         └─────────────────────────────┘            │
+└─────────────────────────────────────────────────────────┘
+```
+
+## Project Structure
+
+```
+healthcare-auditor/
+├── backend/
+│   ├── app/
+│   │   ├── api/              # FastAPI endpoints
+│   │   ├── core/             # Core components (rules_engine.py, neo4j.py)
+│   │   ├── models/           # SQLAlchemy models
+│   │   ├── rules/            # Rule validators (NEW - Phase 3)
+│   │   ├── security/          # Authentication and authorization
+│   │   └── config.py         # Configuration management
+├── frontend/
+│   ├── app/
+│   │   ├── page.tsx             # Dashboard landing page
+│   │   ├── validate/page.tsx   # Bill validation form
+│   │   ├── alerts/page.tsx       # Alerts list with filtering
+│   │   ├── investigate/[id]/    # Investigation detail page
+│   │   ├── analytics/page.tsx    # Analytics dashboard
+│   │   ├── settings/page.tsx     # Configuration page
+│   │   └── layout.tsx         # App layout with navigation
+│   ├── components/
+│   │   ├── ui/                 # Shared components (Button, Card, Alert, Modal)
+│   │   ├── charts/              # Chart components (FraudTrendChart)
+│   │   └── Navigation.tsx       # Navigation bar
+│   ├── lib/
+│   │   ├── api.ts            # API client with error handling
+│   │   └── types/           # TypeScript type definitions
+│   └── package.json           # Dependencies
+├── tests/
+│   ├── test_graph_builder.py   # Knowledge graph tests (16 passing)
+│   ├── test_rules_engine.py    # Rules engine tests (27 passing)
+│   ├── test_anomaly_detection.py # Anomaly detection tests (3 passing)
+│   └── test_ml_models.py     # ML models tests (3 passing)
+├── k8s/                       # Kubernetes deployment manifests
+├── wiki/                       # GitHub wiki documentation
+└── docker-compose.yml           # Local development with Docker
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                  FastAPI Backend                │
