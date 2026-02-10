@@ -174,7 +174,7 @@ class IsolationForestModel:
 
         return {
             'is_anomaly': is_anomaly,
-            'anomaly_score': float(anomaly_score)
+            'anomaly_score': float(anomaly_score[0])
         }
 
     def save_model(self, path: str) -> None:

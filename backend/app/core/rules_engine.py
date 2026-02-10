@@ -56,9 +56,9 @@ class RuleChain:
 
         for rule in self.rules:
             try:
-                rule_start = datetime.utcnow()
+                rule_start = datetime.now(datetime.UTC)
                 result = await rule.evaluate(bill, context)
-                rule_end = datetime.utcnow()
+                rule_end = datetime.now(datetime.UTC)
                 result.execution_time_ms = (rule_end - rule_start).total_seconds() * 1000
 
                 results.append(result)
