@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: healthcare-auditor
+  labels:
+    name: healthcare-auditor
+    app.kubernetes.io/name: healthcare-auditor
