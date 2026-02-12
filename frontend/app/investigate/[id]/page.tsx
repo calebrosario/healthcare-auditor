@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { api } from '../../lib/api';
-import { InvestigationResult } from '../../types';
-import Card from '../../components/ui/card';
-import Button from '../../components/ui/button';
+import { useRouter, useParams } from 'next/navigation';
+import { api } from '@/lib/api';
+import { InvestigationResult } from '@/types';
+import Card from '@/components/ui/card';
+import Button from '@/components/ui/button';
 
 export default function InvestigatePage() {
   const router = useRouter();

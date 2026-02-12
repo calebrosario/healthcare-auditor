@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { api } from '../../lib/api';
-import { AnalyticsMetrics, TrendData } from '../../types';
-import Card from '../../components/ui/card';
+import { api } from '@/lib/api';
+import { AnalyticsMetrics, TrendData } from '@/types';
+import Card from '@/components/ui/card';
 
 export default function AnalyticsPage() {
   const [metrics, setMetrics] = React.useState<AnalyticsMetrics | null>(null);

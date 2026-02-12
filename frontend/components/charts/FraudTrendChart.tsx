@@ -13,37 +13,28 @@ interface FraudTrendChartProps {
 }
 
 export default function FraudTrendChart({ data }: FraudTrendChartProps) {
-  return React.createElement(ResponsiveContainer, {
-    width: '100%',
-    height: 400,
-  }, [
-    React.createElement(LineChart, {
-      data,
-      margin: { top: 5, right: 30, left: 20, bottom: 5 },
-    }, [
-      React.createElement(CartesianGrid, {
-        strokeDasharray: '3 3',
-      }),
-      React.createElement(XAxis, {
-        dataKey: 'date',
-        stroke: '#8884d8',
-      }),
-      React.createElement(YAxis, null),
-      React.createElement(Tooltip, null),
-      React.createElement(Legend, null),
-      React.createElement(Line, {
-        type: 'monotone',
-        dataKey: 'fraud_count',
-        stroke: '#ef4444',
-        name: 'Fraud Detected',
-      }),
-      React.createElement(Line, {
-        type: 'monotone',
-        dataKey: 'total_count',
-        stroke: '#8884d8',
-        name: 'Total Bills',
-        strokeDasharray: '5 5',
-      }),
-    ]),
-  ]);
+  return (
+    <ResponsiveContainer width="100%" height={400}>
+      <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="date" stroke="#8884d8" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Line
+          type="monotone"
+          dataKey="fraud_count"
+          stroke="#ef4444"
+          name="Fraud Detected"
+        />
+        <Line
+          type="monotone"
+          dataKey="total_count"
+          stroke="#8884d8"
+          name="Total Bills"
+          strokeDasharray="5 5"
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  );
 }

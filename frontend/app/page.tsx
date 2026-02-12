@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { api } from '../lib/api';
-import { DashboardStats } from '../types';
-import Alert from '../components/ui/alert';
-import Card from '../components/ui/card';
+import { api } from '@/lib/api';
+import { DashboardStats } from '@/types';
+import Alert from '@/components/ui/alert';
+import Card from '@/components/ui/card';
 
 export default function Home() {
   const [stats, setStats] = useState<DashboardStats | null>(null);

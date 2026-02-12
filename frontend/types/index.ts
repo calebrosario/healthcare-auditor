@@ -184,7 +184,7 @@ export interface AnalyticsMetrics {
   fraud_trend: TrendData[];
   top_risk_providers: ProviderRisk[];
   code_violation_breakdown: CodeViolationBreakdown;
-  ml_model_performance: ModelPerformance;
+  ml_model_performance: ModelPerformance[];
   rule_effectiveness: RuleEffectiveness;
 }
 

@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { api } from '../../lib/api';
-import { FraudAlert, AlertFilter } from '../../types';
-import Alert from '../../components/ui/alert';
-import Card from '../../components/ui/card';
-import Button from '../../components/ui/button';
+import { api } from '@/lib/api';
+import { FraudAlert, AlertFilter } from '@/types';
+import Alert from '@/components/ui/alert';
+import Card from '@/components/ui/card';
+import Button from '@/components/ui/button';
 
 export default function AlertsPage() {
   const [alerts, setAlerts] = React.useState<FraudAlert[]>([]);

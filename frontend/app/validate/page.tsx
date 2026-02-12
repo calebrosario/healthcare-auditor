@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { api } from '../../lib/api';
-import { BillSubmission, ValidationReport } from '../../types';
-import Button from '../../components/ui/button';
-import Card from '../../components/ui/card';
-import Alert from '../../components/ui/alert';
+import { api } from '@/lib/api';
+import { BillSubmission, ValidationReport } from '@/types';
+import Button from '@/components/ui/button';
+import Card from '@/components/ui/card';
+import Alert from '@/components/ui/alert';
 
 export default function ValidatePage() {
   const [bill, setBill] = useState<BillSubmission>({
