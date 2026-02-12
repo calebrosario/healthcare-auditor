@@ -46,7 +46,7 @@ test.describe('Healthcare Auditor - Critical User Flows', () => {
     await expect(page.locator('[data-testid="alerts-grid"]')).toBeVisible();
 
     await expect(page.locator('select#filter-status')).toBeVisible();
-    await page.locator('select#filter-risk')).toBeVisible();
+    await expect(page.locator('select#filter-risk')).toBeVisible();
 
     page.locator('button:has-text("Clear Filters")').click();
 

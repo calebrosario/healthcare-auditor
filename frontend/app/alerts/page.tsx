@@ -31,21 +31,19 @@ export default function AlertsPage() {
   }, [filter]);
 
   const handleFilterChange = (key: keyof AlertFilter, value: string) => {
-    setFilter(prev => ({ ...prev, [key]: value === '' ? undefined : value }));
+    setFilter((prev) => ({ ...prev, [key]: value === '' ? undefined : value }));
   };
 
   const handleStatusUpdate = async (alertId: string, status: 'investigating' | 'resolved' | 'dismissed') => {
     try {
       await api.updateAlertStatus(alertId, status);
-      setAlerts(prev => prev.map(alert =>
-        alert.id === alertId ? { ...alert, status } : alert
-      ));
+      setAlerts((prev) => prev.map((alert) => (alert.id === alertId ? { ...alert, status } : alert)));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update alert status');
     }
   };
 
-  const filteredAlerts = alerts.filter(alert => {
+  const filteredAlerts = alerts.filter((alert) => {
     if (filter.status && !filter.status.includes(alert.status)) return false;
     if (filter.risk_level && !filter.risk_level.includes(alert.risk_level)) return false;
     // provider_id doesn't exist on FraudAlert - skip this filter
@@ -121,38 +119,34 @@ export default function AlertsPage() {
         </header>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            Loading alerts...
-          </div>
+          <div className="flex items-center justify-center py-12">Loading alerts...</div>
         ) : (
           <div className="space-y-4">
             {filteredAlerts.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                No alerts found matching your filters.
-              </div>
+              <div className="text-center py-12 text-gray-500">No alerts found matching your filters.</div>
             ) : (
-              filteredAlerts.map(alert => (
+              filteredAlerts.map((alert) => (
                 <Card key={alert.id} title={alert.claim_id}>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between mb-2">
-                      <span className={`ml-2 px-2 py-1 rounded text-sm font-medium ${
-                        alert.risk_level === 'high' ? 'bg-red-600 text-white' :
-                        alert.risk_level === 'medium' ? 'bg-yellow-600 text-white' :
-                        'bg-green-600 text-white'
-                      }`}>
+                      <span
+                        className={`ml-2 px-2 py-1 rounded text-sm font-medium ${
+                          alert.risk_level === 'high'
+                            ? 'bg-red-600 text-white'
+                            : alert.risk_level === 'medium'
+                              ? 'bg-yellow-600 text-white'
+                              : 'bg-green-600 text-white'
+                        }`}
+                      >
                         {alert.risk_level.toUpperCase()}
                       </span>
-                      <span className="text-sm text-gray-500">
-                        {new Date(alert.created_at).toLocaleString()}
-                      </span>
+                      <span className="text-sm text-gray-500">{new Date(alert.created_at).toLocaleString()}</span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div>
                         <div className="text-sm text-gray-600 mb-1">Composite Score:</div>
-                        <div className="text-2xl font-bold text-gray-900">
-                          {alert.composite_score.toFixed(2)}
-                        </div>
+                        <div className="text-2xl font-bold text-gray-900">{alert.composite_score.toFixed(2)}</div>
                       </div>
                       <div>
                         <div className="text-sm text-gray-600 mb-1">ML Probability:</div>
@@ -171,9 +165,7 @@ export default function AlertsPage() {
                           </span>
                         ))}
                         {alert.triggered_rules.length > 3 && (
-                          <span className="text-sm text-gray-500">
-                            +{alert.triggered_rules.length - 3} more
-                          </span>
+                          <span className="text-sm text-gray-500">+{alert.triggered_rules.length - 3} more</span>
                         )}
                       </div>
 
@@ -198,7 +190,11 @@ export default function AlertsPage() {
 
                       {alert.status === 'resolved' && (
                         <div className="border-t pt-4">
-                          <Button variant="secondary" fullWidth onClick={() => handleStatusUpdate(alert.id, 'investigating')}>
+                          <Button
+                            variant="secondary"
+                            fullWidth
+                            onClick={() => handleStatusUpdate(alert.id, 'investigating')}
+                          >
                             Reopen Investigation
                           </Button>
                         </div>
@@ -207,7 +203,7 @@ export default function AlertsPage() {
                   </div>
                 </Card>
               ))
-            )
+            )}
           </div>
         )}
       </div>
