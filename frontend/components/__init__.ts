@@ -1,4 +1,3 @@
-export { Button } from './ui/button';
-export { Input } from './ui/input';
-export { Card } from './ui/card';
-export { Alert as AlertComponent } from './ui/alert';
+export { default as Button } from './ui/button';
+export { default as Card } from './ui/card';
+export { default as Alert } from './ui/alert';

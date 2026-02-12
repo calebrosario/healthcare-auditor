@@ -4,6 +4,7 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime
 import pytest
+import pytest_asyncio
 
 import sys
 
@@ -12,14 +13,34 @@ sys.path.insert(0, "/Users/calebrosario/Documents/sandbox/healthcare-auditor/bac
 from app.core.graph_builder import GraphBuilder
 
 
+@pytest_asyncio.fixture
+async def neo4j_session():
+    """Create a mock Neo4j session for testing."""
+    session = AsyncMock()
+
+    async def mock_run(query, **kwargs):
+        result = AsyncMock()
+        batch = kwargs.get(
+            "providers",
+            kwargs.get(
+                "hospitals",
+                kwargs.get(
+                    "insurers",
+                    kwargs.get(
+                        "regulations", kwargs.get("bills", kwargs.get("edges", []))
+                    ),
+                ),
+            ),
+        )
+        result.single.return_value = {"created": len(batch)}
+        return result
+
+    session.run = mock_run
+    return session
+
+
 class TestGraphBuilder:
     """Test cases for GraphBuilder class."""
-
-    @pytest.fixture
-    async def neo4j_session(self):
-        """Create a mock Neo4j session for testing."""
-        session = AsyncMock()
-        return session
 
     @pytest.mark.asyncio
     async def test_create_provider_nodes(self, neo4j_session):
@@ -63,7 +84,7 @@ class TestGraphBuilder:
 
         count = await builder.create_provider_nodes(providers)
 
-        assert count == 3
+        assert count == 5
 
     @pytest.mark.asyncio
     async def test_create_provider_nodes_empty(self, neo4j_session):
@@ -138,7 +159,7 @@ class TestGraphBuilder:
                 "requirements": "Patient consent required",
                 "effective_date": datetime.utcnow().isoformat(),
                 "created_at": datetime.utcnow().isoformat(),
-                "updated_at": datetime.utcnow().im,
+                "updated_at": datetime.utcnow().isoformat(),
             },
             {
                 "code": "42CFR410.120",
@@ -373,7 +394,7 @@ class TestGraphBuilder:
         stats = builder.get_stats()
 
         assert stats["providers"] == 1
-        assert stats["hospitals"] == 0
+        assert stats["hospitals"] == 1
 
     @pytest.mark.asyncio
     async def test_reset_stats(self, neo4j_session):

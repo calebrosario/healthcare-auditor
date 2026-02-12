@@ -1,5 +1,7 @@
 # Installation Guide
 
+**Tags**: #installation #setup #dependencies #python #postgresql #neo4j #redis #docker
+
 This guide will help you set up Healthcare Auditor on your local machine for development or production use.
 
 ## Table of Contents

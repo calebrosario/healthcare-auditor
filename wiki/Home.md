@@ -1,5 +1,7 @@
 # Healthcare Auditor Wiki
 
+**Tags**: #documentation #installation #architecture #api #configuration #development #testing #deployment #troubleshooting #healthcare #fraud-detection
+
 Welcome to the Healthcare Auditor documentation wiki. This comprehensive healthcare billing fraud detection and compliance verification system combines rule-based validation, knowledge graph analysis, and machine learning to identify suspicious billing patterns.
 
 ## 📚 Documentation
@@ -79,25 +81,20 @@ poetry run uvicorn backend.app.main:app --reload --port 8000
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                   FastAPI Backend                     │
-│                      │                               │
-│         ┌────────────┴────────────┐                 │
-│         │   PostgreSQL (Primary)  │                 │
-│         │   Bills, Providers, etc.│                 │
-│         └──────────────────────────┘                 │
-│                      │                               │
-│         ┌────────────┴────────────┐                 │
-│         │   Neo4j (Graph)        │                 │
-│         │   Provider Networks     │                 │
-│         │   Regulation Relations  │                 │
-│         └──────────────────────────┘                 │
-│                      │                               │
-│         ┌────────────┴────────────┐                 │
-│         │   Redis (Cache)        │                 │
-│         └──────────────────────────┘                 │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A[FastAPI Backend] --> B[PostgreSQL<br/>Primary]
+    A --> C[Neo4j<br/>Graph]
+    A --> D[Redis<br/>Cache]
+
+    B --> B1[Bills, Providers, etc.]
+    C --> C1[Provider Networks<br/>Regulation Relations]
+    D --> D1[Cache & Queue]
+
+    style A fill:#e1f5ff
+    style B fill:#e8f5e9
+    style C fill:#fff3e0
+    style D fill:#f3e5f5
 ```
 
 **Technology Stack:**
@@ -111,6 +108,31 @@ poetry run uvicorn backend.app.main:app --reload --port 8000
 ---
 
 ## 📊 Features
+
+```mermaid
+flowchart TD
+    A[Healthcare Auditor] --> B[Knowledge Graph<br/>Phase 2]
+    A --> C[Rules Engine<br/>Phase 3]
+    A --> D[Fraud Detection & ML<br/>Phase 4]
+
+    B --> B1[Neo4j Integration]
+    B --> B2[7 Relationship Types]
+    B --> B3[900x Performance]
+
+    C --> C1[9 Rules/4 Categories]
+    C --> C2[Composite Scoring]
+    C --> C3[Batch Evaluation]
+
+    D --> D1[Statistical Anomalies]
+    D --> D2[ML Models]
+    D --> D3[Network Analysis]
+    D --> D4[Code Legality]
+
+    style A fill:#e1f5ff
+    style B fill:#e8f5e9
+    style C fill:#fff3e0
+    style D fill:#f3e5f5
+```
 
 ### Knowledge Graph (Phase 2 - Complete)
 - ✅ Neo4j integration for provider networks
@@ -134,6 +156,36 @@ poetry run uvicorn backend.app.main:app --reload --port 8000
 - ✅ Code legality verification (CMS NCCI, fee schedules, LCD/NCD)
 - ✅ Combined risk scoring (weighted ensemble)
 - ✅ API endpoint enhancements with Phase 4 results
+
+---
+
+## ⚖️ Risk Scoring Workflow
+
+```mermaid
+flowchart LR
+    A[Medical Bill] --> B[Rules Engine<br/>25% Weight]
+    A --> C[ML Models<br/>35% Weight]
+    A --> D[Network Analysis<br/>25% Weight]
+    A --> E[NLP Analysis<br/>15% Weight]
+    A --> F[Code Legality<br/>10% Weight]
+
+    B --> G[Risk Scoring Engine]
+    C --> G
+    D --> G
+    E --> G
+    F --> G
+
+    G --> H{Risk Level}
+    H -->|≥ 0.70| I[High Risk<br/>Immediate Investigation]
+    H -->|0.40 - 0.69| J[Medium Risk<br/>Priority Review]
+    H -->|< 0.40| K[Low Risk<br/>Normal Processing]
+
+    style A fill:#e1f5ff
+    style G fill:#fff9c4
+    style I fill:#ffcdd2
+    style J fill:#fff9c4
+    style K fill:#c8e6c9
+```
 
 ---
 

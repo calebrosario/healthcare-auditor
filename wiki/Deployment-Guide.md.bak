@@ -161,24 +161,6 @@ docker-compose exec api alembic upgrade head
 
 ## Kubernetes Deployment
 
-**IMPORTANT**: Production-ready Kubernetes manifests are now available in the `k8s/` directory. These include:
-
-- **Namespace**: Dedicated namespace for Healthcare Auditor
-- **Secrets**: All sensitive credentials (passwords, API keys)
-- **ConfigMaps**: Non-sensitive configuration
-- **Deployments**: PostgreSQL, Neo4j, Backend API
-- **Services**: Internal services and ingress for external access
-- **HPA**: Horizontal Pod Autoscaler for backend scaling
-
-See `k8s/README.md` for detailed deployment instructions including:
-- Pre-requisites (Kubernetes cluster, storage class, ingress controller)
-- Resource requirements and limits
-- Scaling configuration
-- Security best practices
-- Monitoring and troubleshooting
-
-### Legacy Inline Examples
-
 ### Namespace and ConfigMaps
 
 ```yaml

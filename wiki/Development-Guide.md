@@ -1,5 +1,7 @@
 # Development Guide
 
+**Tags**: #development #coding-standards #best-practices #workflow #testing #git
+
 This guide covers coding standards, development workflow, and best practices for contributing to Healthcare Auditor.
 
 ## Table of Contents

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import React from 'react';
+import Navigation from "../components/Navigation";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,11 +16,16 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <html lang="en">
-      <body className={inter.className}>
-        {children}
-      </body>
-    </html>
-  );
+  return React.createElement('html', {
+    lang: 'en',
+  }, [
+    React.createElement('body', {
+      className: `${inter.className} bg-gray-50`,
+    }, [
+      React.createElement(Navigation, null),
+      React.createElement('main', {
+        className: 'min-h-screen',
+      }, children),
+    ]),
+  ]);
 }
