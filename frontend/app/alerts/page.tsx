@@ -46,8 +46,6 @@ export default function AlertsPage() {
   const filteredAlerts = alerts.filter((alert) => {
     if (filter.status && !filter.status.includes(alert.status)) return false;
     if (filter.risk_level && !filter.risk_level.includes(alert.risk_level)) return false;
-    // provider_id doesn't exist on FraudAlert - skip this filter
-    // if (filter.provider_id && alert.provider_id !== filter.provider_id) return false;
     if (filter.date_from && new Date(alert.created_at) < new Date(filter.date_from)) return false;
     if (filter.date_to && new Date(alert.created_at) > new Date(filter.date_to)) return false;
     return true;
