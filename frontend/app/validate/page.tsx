@@ -8,7 +8,7 @@ import Card from '../../components/ui/card';
 import Alert from '../../components/ui/alert';
 
 export default function ValidatePage() {
-  const [bill, setBill] = React.useState<BillSubmission>({
+  const [bill, setBill] = useState<BillSubmission>({
     patient_id: '',
     provider_id: '',
     patient_name: '',
@@ -24,7 +24,7 @@ export default function ValidatePage() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = React.useState<ValidationReport | null>(null);
+  const [result, setResult] = useState<ValidationReport | null>(null);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,317 +48,319 @@ export default function ValidatePage() {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const field = e.target.id as keyof BillSubmission;
-    const value = e.target.type === 'number' ? parseFloat(e.target.value) : e.target.value;
+    const field = e.currentTarget.id as keyof BillSubmission;
+    const value = e.currentTarget.type === 'number' ? parseFloat(e.currentTarget.value) : e.currentTarget.value;
     handleChange(field, value);
   };
 
-  return React.createElement('div', {
-    className: 'min-h-screen bg-gray-50 py-8',
-  }, [
-    React.createElement('div', {
-      className: 'max-w-3xl mx-auto px-4 sm:px-6 lg:px-8',
-    }, [
-      React.createElement('h1', {
-        className: 'text-3xl font-bold text-gray-900 mb-8',
-      }, 'Validate Bill'),
+  const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const field = e.currentTarget.id as keyof BillSubmission;
+    handleChange(field, e.currentTarget.value);
+  };
 
-            React.createElement(Card, {}, React.createElement('form', {
-              onSubmit: handleSubmit,
-              className: 'space-y-6',
-            }, [
-          error && React.createElement(Alert, {
-            variant: 'error',
-          }, error),
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Validate Bill</h1>
 
-          React.createElement('div', {
-            className: 'grid grid-cols-1 md:grid-cols-2 gap-6',
-          }, [
-            React.createElement('div', null, [
-              React.createElement('label', {
-                htmlFor: 'patient_name',
-                className: 'block text-sm font-medium text-gray-700 mb-2',
-              }, 'Patient Name'),
-              React.createElement('input', {
-                type: 'text',
-                id: 'patient_name',
-                value: bill.patient_name,
-                onChange: (e) => handleChange('patient_name', e.target.value),
-                required: true,
-                className: 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-              }),
-            ]),
+        <Card>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && <Alert variant="error">{error}</Alert>}
 
-            React.createElement('div', null, [
-              React.createElement('label', {
-                htmlFor: 'patient_id',
-                className: 'block text-sm font-medium text-gray-700 mb-2',
-              }, 'Patient ID'),
-              React.createElement('input', {
-                type: 'text',
-                id: 'patient_id',
-                value: bill.patient_id,
-                onChange: (e) => handleChange('patient_id', e.target.value),
-                required: true,
-                className: 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-              }),
-            ]),
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label
+                  htmlFor="patient_name"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Patient Name
+                </label>
+                <input
+                  type="text"
+                  id="patient_name"
+                  value={bill.patient_name}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
 
-            React.createElement('div', null, [
-              React.createElement('label', {
-                htmlFor: 'provider_name',
-                className: 'block text-sm font-medium text-gray-700 mb-2',
-              }, 'Provider Name'),
-              React.createElement('input', {
-                type: 'text',
-                id: 'provider_name',
-                value: bill.provider_name,
-                onChange: (e) => handleChange('provider_name', e.target.value),
-                required: true,
-                className: 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-              }),
-            ]),
+              <div>
+                <label
+                  htmlFor="patient_id"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Patient ID
+                </label>
+                <input
+                  type="text"
+                  id="patient_id"
+                  value={bill.patient_id}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
 
-            React.createElement('div', null, [
-              React.createElement('label', {
-                htmlFor: 'provider_id',
-                className: 'block text-sm font-medium text-gray-700 mb-2',
-              }, 'Provider ID (NPI)'),
-              React.createElement('input', {
-                type: 'text',
-                id: 'provider_id',
-                value: bill.provider_id,
-                onChange: (e) => handleChange('provider_id', e.target.value),
-                required: true,
-                className: 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-              }),
-            ]),
+              <div>
+                <label
+                  htmlFor="provider_name"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Provider Name
+                </label>
+                <input
+                  type="text"
+                  id="provider_name"
+                  value={bill.provider_name}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
 
-            React.createElement('div', null, [
-              React.createElement('label', {
-                htmlFor: 'service_date',
-                className: 'block text-sm font-medium text-gray-700 mb-2',
-              }, 'Service Date'),
-              React.createElement('input', {
-                type: 'date',
-                id: 'service_date',
-                value: bill.service_date,
-                onChange: (e) => handleChange('service_date', e.target.value),
-                required: true,
-                className: 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-              }),
-            ]),
+              <div>
+                <label
+                  htmlFor="provider_id"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Provider ID (NPI)
+                </label>
+                <input
+                  type="text"
+                  id="provider_id"
+                  value={bill.provider_id}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
 
-            React.createElement('div', null, [
-              React.createElement('label', {
-                htmlFor: 'bill_date',
-                className: 'block text-sm font-medium text-gray-700 mb-2',
-              }, 'Bill Date'),
-              React.createElement('input', {
-                type: 'date',
-                id: 'bill_date',
-                value: bill.bill_date,
-                onChange: (e) => handleChange('bill_date', e.target.value),
-                required: true,
-                className: 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-              }),
-            ]),
+              <div>
+                <label
+                  htmlFor="service_date"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Service Date
+                </label>
+                <input
+                  type="date"
+                  id="service_date"
+                  value={bill.service_date}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
 
-            React.createElement('div', null, [
-              React.createElement('label', {
-                htmlFor: 'procedure_code',
-                className: 'block text-sm font-medium text-gray-700 mb-2',
-              }, 'Procedure Code (CPT)'),
-              React.createElement('input', {
-                type: 'text',
-                id: 'procedure_code',
-                value: bill.procedure_code,
-                onChange: (e) => handleChange('procedure_code', e.target.value),
-                required: true,
-                className: 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-              }),
-            ]),
+              <div>
+                <label
+                  htmlFor="bill_date"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Bill Date
+                </label>
+                <input
+                  type="date"
+                  id="bill_date"
+                  value={bill.bill_date}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
 
-            React.createElement('div', null, [
-              React.createElement('label', {
-                htmlFor: 'diagnosis_code',
-                className: 'block text-sm font-medium text-gray-700 mb-2',
-              }, 'Diagnosis Code (ICD-10)'),
-              React.createElement('input', {
-                type: 'text',
-                id: 'diagnosis_code',
-                value: bill.diagnosis_code,
-                onChange: (e) => handleChange('diagnosis_code', e.target.value),
-                required: true,
-                className: 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-              }),
-            ]),
+              <div>
+                <label
+                  htmlFor="procedure_code"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Procedure Code (CPT)
+                </label>
+                <input
+                  type="text"
+                  id="procedure_code"
+                  value={bill.procedure_code}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
 
-            React.createElement('div', null, [
-              React.createElement('label', {
-                htmlFor: 'billed_amount',
-                className: 'block text-sm font-medium text-gray-700 mb-2',
-              }, 'Billed Amount ($)'),
-              React.createElement('input', {
-                type: 'number',
-                id: 'billed_amount',
-                value: bill.billed_amount,
-                onChange: (e) => handleChange('billed_amount', parseFloat(e.target.value)),
-                required: true,
-                step: '0.01',
-                min: '0',
-                className: 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-              }),
-            ]),
+              <div>
+                <label
+                  htmlFor="diagnosis_code"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Diagnosis Code (ICD-10)
+                </label>
+                <input
+                  type="text"
+                  id="diagnosis_code"
+                  value={bill.diagnosis_code}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
 
-            React.createElement('div', null, [
-              React.createElement('label', {
-                htmlFor: 'facility_name',
-                className: 'block text-sm font-medium text-gray-700 mb-2',
-              }, 'Facility Name'),
-              React.createElement('input', {
-                type: 'text',
-                id: 'facility_name',
-                value: bill.facility_name,
-                onChange: (e) => handleChange('facility_name', e.target.value),
-                className: 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-              }),
-            ]),
+              <div>
+                <label
+                  htmlFor="billed_amount"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Billed Amount ($)
+                </label>
+                <input
+                  type="number"
+                  id="billed_amount"
+                  value={bill.billed_amount}
+                  onChange={handleInputChange}
+                  required
+                  step="0.01"
+                  min="0"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
 
-            React.createElement('div', null, [
-              React.createElement('label', {
-                htmlFor: 'documentation_text',
-                className: 'block text-sm font-medium text-gray-700 mb-2',
-              }, 'Documentation Text'),
-              React.createElement('textarea', {
-                id: 'documentation_text',
-                value: bill.documentation_text,
-                onChange: (e) => handleChange('documentation_text', e.target.value),
-                rows: 4,
-                className: 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-              }),
-            ]),
+              <div>
+                <label
+                  htmlFor="facility_name"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Facility Name
+                </label>
+                <input
+                  type="text"
+                  id="facility_name"
+                  value={bill.facility_name}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
 
-            React.createElement(Button, {
-              variant: 'primary',
-              isLoading: loading,
-              fullWidth: true,
-            }, 'Validate Bill'),
-          ]),
-        ]),
-      }),
+              <div className="md:col-span-2">
+                <label
+                  htmlFor="documentation_text"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Documentation Text
+                </label>
+                <textarea
+                  id="documentation_text"
+                  value={bill.documentation_text}
+                  onChange={handleTextAreaChange}
+                  rows={4}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
 
-      result && React.createElement(Card, {
-        title: 'Validation Results',
-      }, React.createElement('div', {
-        className: 'space-y-6',
-      }, [
-          React.createElement('div', {
-            className: `p-4 rounded-lg ${
-              result.risk_level === 'high' ? 'bg-red-50 border-red-500' :
-              result.risk_level === 'medium' ? 'bg-yellow-50 border-yellow-500' :
-              'bg-green-50 border-green-500'
-            }`,
-          }, [
-            React.createElement('h3', {
-              className: 'text-xl font-bold mb-4',
-            }, `Risk Level: ${result.risk_level.toUpperCase()}`),
+            <Button variant="primary" isLoading={loading} fullWidth>
+              Validate Bill
+            </Button>
+          </form>
+        </Card>
 
-            React.createElement('div', {
-              className: 'grid grid-cols-1 md:grid-cols-2 gap-4 mb-4',
-            }, [
-              React.createElement('div', null, [
-                React.createElement('h4', {
-                  className: 'font-semibold mb-2',
-                }, 'Composite Score'),
-                React.createElement('p', {
-                  className: 'text-2xl font-bold',
-                }, result.composite_score ? result.composite_score.toFixed(2) : 'N/A'),
-              ]),
+        {result && (
+          <Card title="Validation Results">
+            <div className="space-y-6">
+              <div
+                className={`p-4 rounded-lg border ${
+                  result.risk_level === 'high'
+                    ? 'bg-red-50 border-red-500'
+                    : result.risk_level === 'medium'
+                    ? 'bg-yellow-50 border-yellow-500'
+                    : 'bg-green-50 border-green-500'
+                }`}
+              >
+                <h3 className="text-xl font-bold mb-4">
+                  Risk Level: {result.risk_level.toUpperCase()}
+                </h3>
 
-              React.createElement('div', null, [
-                React.createElement('h4', {
-                  className: 'font-semibold mb-2',
-                }, 'Execution Time'),
-                React.createElement('p', null, `${result.execution_time_ms.toFixed(0)}ms`),
-              ]),
-            ]),
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">Composite Score</h4>
+                    <p className="text-2xl font-bold">
+                      {result.composite_score
+                        ? result.composite_score.toFixed(2)
+                        : 'N/A'}
+                    </p>
+                  </div>
 
-            React.createElement('div', {
-              className: 'border-t pt-4',
-            }, [
-              React.createElement('h4', {
-                className: 'font-semibold mb-2',
-              }, 'Rule Violations'),
-              React.createElement('ul', {
-                className: 'list-disc list-inside space-y-1',
-              }, result.code_violations.map((violation, i) => 
-                React.createElement('li', {
-                  key: i,
-                  className: `p-2 rounded ${
-                    violation.severity === 'error' ? 'bg-red-100' :
-                    violation.severity === 'warning' ? 'bg-yellow-100' :
-                    'bg-blue-100'
-                  }`,
-                }, [
-                  React.createElement('span', {
-                    className: 'font-semibold',
-                  }, violation.violation_type),
-                  React.createElement('br', null),
-                  violation.message,
-                ])
-              )),
+                  <div>
+                    <h4 className="font-semibold mb-2">Execution Time</h4>
+                    <p>{result.execution_time_ms.toFixed(0)}ms</p>
+                  </div>
+                </div>
+              </div>
 
-              result.anomaly_flags.length > 0 && React.createElement('div', {
-                className: 'border-t pt-4',
-              }, [
-                React.createElement('h4', {
-                  className: 'font-semibold mb-2',
-                }, 'Anomaly Flags'),
-                React.createElement('ul', {
-                  className: 'list-disc list-inside space-y-1',
-                }, result.anomaly_flags.map((flag, i) =>
-                  React.createElement('li', {
-                    key: i,
-                    className: 'p-2 bg-orange-50 rounded',
-                  }, [
-                    React.createElement('span', {
-                      className: 'font-semibold',
-                    }, `${flag.type}:`),
-                    React.createElement('br', null),
-                    flag.message,
-                    React.createElement('br', null),
-                    `Score: ${flag.anomaly_score.toFixed(2)} (Threshold: ${flag.threshold})`,
-                  ])
-                )),
+              <div className="border-t pt-4">
+                <h4 className="font-semibold mb-2">Rule Violations</h4>
+                <ul className="list-disc list-inside space-y-1">
+                  {result.code_violations.map((violation, i) => (
+                    <li
+                      key={i}
+                      className={`p-2 rounded ${
+                        violation.severity === 'error'
+                          ? 'bg-red-100'
+                          : violation.severity === 'warning'
+                          ? 'bg-yellow-100'
+                          : 'bg-blue-100'
+                      }`}
+                    >
+                      <span className="font-semibold">
+                        {violation.violation_type}
+                      </span>
+                      <br />
+                      {violation.message}
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-              result.ml_predictions.length > 0 && React.createElement('div', {
-                className: 'border-t pt-4',
-              }, [
-                React.createElement('h4', {
-                  className: 'font-semibold mb-2',
-                }, 'ML Predictions'),
-                result.ml_predictions.map((pred, i) =>
-                  React.createElement('div', {
-                    key: i,
-                    className: 'p-2 bg-purple-50 rounded mb-2',
-                  }, [
-                    React.createElement('span', {
-                      className: 'font-semibold',
-                    }, `${pred.model_type}: `),
-                    React.createElement('br', null),
-                    `Is Fraud: ${pred.is_fraud ? 'Yes' : 'No'}`,
-                    React.createElement('br', null),
-                    `Probability: ${(pred.fraud_probability * 100).toFixed(1)}%`,
-                    React.createElement('br', null),
-                    `Confidence: ${(pred.confidence * 100).toFixed(1)}%`,
-                  ])
-                ),
-              ]),
-            ]),
-          ]),
-        ]),
-      ]),
-    ])
+              {result.anomaly_flags.length > 0 && (
+                <div className="border-t pt-4">
+                  <h4 className="font-semibold mb-2">Anomaly Flags</h4>
+                  <ul className="list-disc list-inside space-y-1">
+                    {result.anomaly_flags.map((flag, i) => (
+                      <li key={i} className="p-2 bg-orange-50 rounded">
+                        <span className="font-semibold">{flag.type}:</span>
+                        <br />
+                        {flag.message}
+                        <br />
+                        Score: {flag.anomaly_score.toFixed(2)} (Threshold:{' '}
+                        {flag.threshold})
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {result.ml_predictions.length > 0 && (
+                <div className="border-t pt-4">
+                  <h4 className="font-semibold mb-2">ML Predictions</h4>
+                  {result.ml_predictions.map((pred, i) => (
+                    <div
+                      key={i}
+                      className="p-2 bg-purple-50 rounded mb-2"
+                    >
+                      <span className="font-semibold">{pred.model_type}:</span>
+                      <br />
+                      Is Fraud: {pred.is_fraud ? 'Yes' : 'No'}
+                      <br />
+                      Probability:{' '}
+                      {(pred.fraud_probability * 100).toFixed(1)}%
+                      <br />
+                      Confidence: {(pred.confidence * 100).toFixed(1)}%
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
+      </div>
+    </div>
   );
 }

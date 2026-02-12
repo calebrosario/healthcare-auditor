@@ -1,15 +1,18 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { api } from '../../lib/api';
-import { InvestigationResult, GraphData, TimelineEvent } from '../../types';
+import { InvestigationResult } from '../../types';
 import Card from '../../components/ui/card';
 import Button from '../../components/ui/button';
 
 export default function InvestigatePage() {
-  const { id } = useParams();
-  const [investigation, setInvestigation] = React.useState<InvestigationResult | null>(null);
+  const router = useRouter();
+  const params = useParams();
+  const id = params?.id as string;
+
+  const [investigation, setInvestigation] = useState<InvestigationResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -33,260 +36,212 @@ export default function InvestigatePage() {
   }, [id]);
 
   if (loading) {
-    return React.createElement('div', {
-      className: 'min-h-screen bg-gray-50 flex items-center justify-center',
-    }, 'Loading investigation...');
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-500">Loading investigation...</div>
+      </div>
+    );
   }
 
   if (!investigation) {
     return null;
   }
 
-  return React.createElement('div', {
-    className: 'min-h-screen bg-gray-50 py-8',
-  }, [
-    React.createElement('div', {
-      className: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8',
-    }, [
-      React.createElement('header', {
-        className: 'mb-8',
-      }, [
-        React.createElement('div', null, [
-          React.createElement('button', {
-            onClick: () => history.back(),
-            className: 'text-blue-600 hover:text-blue-700 flex items-center',
-            type: 'button',
-          }, '← Back to Alerts'),
-          React.createElement('h1', {
-            className: 'text-3xl font-bold text-gray-900',
-          }, `Investigation: ${investigation.bill.claim_id}`),
-        ]),
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <header className="mb-8">
+          <div>
+            <button
+              onClick={() => router.back()}
+              className="text-blue-600 hover:text-blue-700 flex items-center mb-4"
+              type="button"
+            >
+              ← Back to Alerts
+            </button>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Investigation: {investigation.bill.claim_id}
+            </h1>
+          </div>
 
-        error && React.createElement('div', {
-          className: 'mb-4',
-        }, error),
-      ]),
+          {error && (
+            <div className="mb-4 text-red-600">
+              {error}
+            </div>
+          )}
+        </header>
 
-      React.createElement('div', {
-        className: 'grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8',
-      }, [
-        React.createElement(Card, {
-          title: 'Bill Details',
-          children: React.createElement('div', {
-            className: 'space-y-4',
-          }, [
-            React.createElement('div', null, [
-              React.createElement('div', null, [
-                React.createElement('span', {
-                  className: 'text-gray-600',
-                }, 'Claim ID:'),
-                React.createElement('span', {
-                  className: 'font-semibold text-gray-900',
-                }, investigation.bill.claim_id),
-              ]),
-              React.createElement('div', null, [
-                React.createElement('span', {
-                  className: 'text-gray-600',
-                }, 'Patient:'),
-                React.createElement('span', {
-                  className: 'font-semibold text-gray-900',
-                }, `${investigation.bill.patient_name} (${investigation.bill.patient_id})`),
-              ]),
-              React.createElement('div', null, [
-                React.createElement('span', {
-                  className: 'text-gray-600',
-                }, 'Provider:'),
-                React.createElement('span', {
-                  className: 'font-semibold text-gray-900',
-                }, `${investigation.bill.provider_name} (${investigation.bill.provider_id})`),
-              ]),
-              React.createElement('div', null, [
-                React.createElement('span', {
-                  className: 'text-gray-600',
-                }, 'Service Date:'),
-                React.createElement('span', {
-                  className: 'font-semibold text-gray-900',
-                }, new Date(investigation.bill.service_date).toLocaleDateString()),
-              ]),
-              React.createElement('div', null, [
-                React.createElement('span', {
-                  className: 'text-gray-600',
-                }, 'Bill Date:'),
-                React.createElement('span', {
-                  className: 'font-semibold text-gray-900',
-                }, new Date(investigation.bill.bill_date).toLocaleDateString()),
-              ]),
-              React.createElement('div', null, [
-                React.createElement('span', {
-                  className: 'text-gray-600',
-                }, 'Procedure:'),
-                React.createElement('span', {
-                  className: 'font-semibold text-gray-900',
-                }, `${investigation.bill.procedure_code}`),
-              ]),
-              React.createElement('div', null, [
-                React.createElement('span', {
-                  className: 'text-gray-600',
-                }, 'Diagnosis:'),
-                React.createElement('span', {
-                  className: 'font-semibold text-gray-900',
-                }, `${investigation.bill.diagnosis_code}`),
-              ]),
-              React.createElement('div', null, [
-                React.createElement('span', {
-                  className: 'text-gray-600',
-                }, 'Amount:'),
-                React.createElement('span', {
-                  className: 'font-semibold text-gray-900',
-                }, `$${investigation.bill.billed_amount.toFixed(2)}`),
-              ]),
-            ]),
-          ]),
-        ]),
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <Card title="Bill Details">
+            <div className="space-y-4">
+              <div>
+                <div>
+                  <span className="text-gray-600">Claim ID:</span>
+                  <span className="font-semibold text-gray-900 ml-2">
+                    {investigation.bill.claim_id}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Patient:</span>
+                  <span className="font-semibold text-gray-900 ml-2">
+                    {investigation.bill.patient_name} ({investigation.bill.patient_id})
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Provider:</span>
+                  <span className="font-semibold text-gray-900 ml-2">
+                    {investigation.bill.provider_name} ({investigation.bill.provider_id})
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Service Date:</span>
+                  <span className="font-semibold text-gray-900 ml-2">
+                    {new Date(investigation.bill.service_date).toLocaleDateString()}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Bill Date:</span>
+                  <span className="font-semibold text-gray-900 ml-2">
+                    {new Date(investigation.bill.bill_date).toLocaleDateString()}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Procedure:</span>
+                  <span className="font-semibold text-gray-900 ml-2">
+                    {investigation.bill.procedure_code}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Diagnosis:</span>
+                  <span className="font-semibold text-gray-900 ml-2">
+                    {investigation.bill.diagnosis_code}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Amount:</span>
+                  <span className="font-semibold text-gray-900 ml-2">
+                    ${investigation.bill.billed_amount.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </Card>
 
-        React.createElement(Card, {
-          title: 'Validation Results',
-          children: React.createElement('div', {
-            className: 'space-y-4',
-          }, [
-            React.createElement('div', null, [
-              React.createElement('div', {
-                className: `p-4 rounded-lg ${
-                  investigation.validation.risk_level === 'high' ? 'bg-red-50 border-red-500' :
-                  investigation.validation.risk_level === 'medium' ? 'bg-yellow-50 border-yellow-500' :
-                  'bg-green-50 border-green-500'
-                }`,
-              }, [
-                React.createElement('h3', {
-                  className: 'text-lg font-bold mb-2',
-                }, `Risk Level: ${investigation.validation.risk_level.toUpperCase()}`),
-                React.createElement('div', null, [
-                  React.createElement('span', {
-                    className: 'text-gray-600',
-                  }, 'Composite Score:'),
-                  React.createElement('span', {
-                    className: 'text-2xl font-bold text-gray-900',
-                  }, investigation.validation.composite_score ? investigation.validation.composite_score.toFixed(2) : 'N/A'),
-                ]),
-              ]),
-            ]),
+          <Card title="Validation Results">
+            <div className="space-y-4">
+              <div
+                className={`p-4 rounded-lg border ${
+                  investigation.validation.risk_level === 'high'
+                    ? 'bg-red-50 border-red-500'
+                    : investigation.validation.risk_level === 'medium'
+                    ? 'bg-yellow-50 border-yellow-500'
+                    : 'bg-green-50 border-green-500'
+                }`}
+              >
+                <h3 className="text-lg font-bold mb-2">
+                  Risk Level: {investigation.validation.risk_level.toUpperCase()}
+                </h3>
+                <div>
+                  <span className="text-gray-600">Composite Score:</span>
+                  <span className="text-2xl font-bold text-gray-900 ml-2">
+                    {investigation.validation.composite_score
+                      ? investigation.validation.composite_score.toFixed(2)
+                      : 'N/A'}
+                  </span>
+                </div>
+              </div>
 
-            investigation.validation.anomaly_flags.length > 0 && React.createElement('div', {
-              className: 'border-t pt-4',
-            }, [
-              React.createElement('h4', {
-                className: 'font-semibold mb-2',
-              }, 'Anomaly Flags'),
-              investigation.validation.anomaly_flags.map((flag, i) =>
-                React.createElement('div', {
-                  key: i,
-                  className: 'p-3 bg-orange-50 rounded mb-2',
-                }, [
-                  React.createElement('span', {
-                    className: 'font-semibold',
-                  }, `${flag.type}`),
-                  React.createElement('br', null),
-                  React.createElement('span', {
-                    className: 'text-sm',
-                  }, flag.message),
-                  React.createElement('br', null),
-                  React.createElement('span', {
-                    className: 'text-xs',
-                  }, `Score: ${flag.anomaly_score.toFixed(2)} (Threshold: ${flag.threshold})`),
-                ]),
-              )),
-            ]),
-            ]),
+              {investigation.validation.anomaly_flags.length > 0 && (
+                <div className="border-t pt-4">
+                  <h4 className="font-semibold mb-2">Anomaly Flags</h4>
+                  {investigation.validation.anomaly_flags.map((flag, i) => (
+                    <div key={i} className="p-3 bg-orange-50 rounded mb-2">
+                      <span className="font-semibold">{flag.type}</span>
+                      <br />
+                      <span className="text-sm">{flag.message}</span>
+                      <br />
+                      <span className="text-xs">
+                        Score: {flag.anomaly_score.toFixed(2)} (Threshold:{' '}
+                        {flag.threshold})
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
-            investigation.validation.ml_predictions.length > 0 && React.createElement('div', {
-              className: 'border-t pt-4',
-            }, [
-              React.createElement('h4', {
-                className: 'font-semibold mb-2',
-              }, 'ML Predictions'),
-              investigation.validation.ml_predictions.map((pred, i) =>
-                React.createElement('div', {
-                  key: i,
-                  className: `p-3 rounded ${
-                    pred.is_fraud ? 'bg-red-100 border-red-500' :
-                    'bg-green-100 border-green-500'
-                  } mb-2`,
-                }, [
-                  React.createElement('span', {
-                    className: 'font-semibold',
-                  }, `${pred.model_type}`),
-                  React.createElement('br', null),
-                  React.createElement('span', {
-                    className: 'text-sm',
-                  }, `Is Fraud: ${pred.is_fraud ? 'Yes' : 'No'}`),
-                  React.createElement('br', null),
-                  React.createElement('span', {
-                    className: 'text-xs',
-                  }, `Probability: ${(pred.fraud_probability * 100).toFixed(1)}%`),
-                  React.createElement('br', null),
-                  React.createElement('span', {
-                    className: 'text-xs',
-                  }, `Confidence: ${(pred.confidence * 100).toFixed(1)}%`),
-                ]),
-              )),
-            ]),
-            ]),
+              {investigation.validation.ml_predictions.length > 0 && (
+                <div className="border-t pt-4">
+                  <h4 className="font-semibold mb-2">ML Predictions</h4>
+                  {investigation.validation.ml_predictions.map((pred, i) => (
+                    <div
+                      key={i}
+                      className={`p-3 rounded ${
+                        pred.is_fraud ? 'bg-red-100 border-red-500' : 'bg-green-100 border-green-500'
+                      } mb-2`}
+                    >
+                      <span className="font-semibold">{pred.model_type}</span>
+                      <br />
+                      <span className="text-sm">
+                        Is Fraud: {pred.is_fraud ? 'Yes' : 'No'}
+                      </span>
+                      <br />
+                      <span className="text-xs">
+                        Probability: {(pred.fraud_probability * 100).toFixed(1)}%
+                      </span>
+                      <br />
+                      <span className="text-xs">
+                        Confidence: {(pred.confidence * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
-            investigation.validation.code_violations.length > 0 && React.createElement('div', {
-              className: 'border-t pt-4',
-            }, [
-              React.createElement('h4', {
-                className: 'font-semibold mb-2',
-              }, 'Code Violations'),
-              investigation.validation.code_violations.map((violation, i) =>
-                React.createElement('div', {
-                  key: i,
-                  className: `p-2 rounded ${
-                    violation.severity === 'error' ? 'bg-red-50' :
-                    violation.severity === 'warning' ? 'bg-yellow-50' :
-                    'bg-blue-50'
-                  }`,
-                }, [
-                  React.createElement('span', {
-                    className: 'font-semibold',
-                  }, violation.violation_type),
-                  React.createElement('br', null),
-                  React.createElement('span', {
-                    className: 'text-sm',
-                  }, violation.message),
-                ]),
-              )),
-            ]),
-          ]),
-        ]),
+              {investigation.validation.code_violations.length > 0 && (
+                <div className="border-t pt-4">
+                  <h4 className="font-semibold mb-2">Code Violations</h4>
+                  {investigation.validation.code_violations.map((violation, i) => (
+                    <div
+                      key={i}
+                      className={`p-2 rounded ${
+                        violation.severity === 'error'
+                          ? 'bg-red-50'
+                          : violation.severity === 'warning'
+                          ? 'bg-yellow-50'
+                          : 'bg-blue-50'
+                      }`}
+                    >
+                      <span className="font-semibold">
+                        {violation.violation_type}
+                      </span>
+                      <br />
+                      <span className="text-sm">{violation.message}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </Card>
 
-        React.createElement(Card, {
-          title: 'Audit Trail',
-          children: React.createElement('div', {
-            className: 'space-y-3',
-          }, [
-            investigation.audit_trail.map((entry, i) =>
-              React.createElement('div', {
-                key: i,
-                className: 'p-3 bg-gray-50 rounded border border-gray-200',
-              }, [
-                React.createElement('div', {
-                  className: 'text-sm text-gray-500 mb-1',
-                }, new Date(entry.timestamp).toLocaleString()),
-                React.createElement('div', {
-                  className: 'font-medium',
-                }, entry.action),
-                React.createElement('div', {
-                  className: 'text-gray-700',
-                }, entry.actor),
-                React.createElement('div', {
-                  className: 'text-sm mt-1',
-                }, entry.details),
-              ]),
-            ]),
-          ]),
-        ]),
-      ]),
-    ])
+          <Card title="Audit Trail">
+            <div className="space-y-3">
+              {investigation.audit_trail.map((entry, i) => (
+                <div
+                  key={i}
+                  className="p-3 bg-gray-50 rounded border border-gray-200"
+                >
+                  <div className="text-sm text-gray-500 mb-1">
+                    {new Date(entry.timestamp).toLocaleString()}
+                  </div>
+                  <div className="font-medium">{entry.action}</div>
+                  <div className="text-gray-700">{entry.actor}</div>
+                  <div className="text-sm mt-1">{entry.details}</div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+      </div>
+    </div>
   );
 }
